@@ -1,0 +1,93 @@
+<div class="goal-form">
+  <div class="field">
+    <label for="gf-name">Tên mục tiêu *</label>
+    <input id="gf-name" type="text" [(ngModel)]="form.name" placeholder="VD: Tiết kiệm mua nhà..." />
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="gf-targetValue">Giá trị mục tiêu *</label>
+      <input
+        id="gf-targetValue"
+        type="number"
+        [(ngModel)]="form.targetValue"
+        placeholder="1000000"
+        min="1"
+        step="any"
+      />
+    </div>
+    <div class="field">
+      <label for="gf-unit">Đơn vị *</label>
+      <input id="gf-unit" type="text" [(ngModel)]="form.unit" placeholder="VND, km, quyển sách..." />
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Loại *</label>
+    <div class="radio-group">
+      <label class="radio-label" for="gf-integer">
+        <input id="gf-integer" type="radio" [(ngModel)]="form.valueType" name="gf-valueType" value="integer" />
+        <span class="radio-dot"></span> Số nguyên
+      </label>
+      <label class="radio-label" for="gf-decimal">
+        <input id="gf-decimal" type="radio" [(ngModel)]="form.valueType" name="gf-valueType" value="decimal" />
+        <span class="radio-dot"></span> Số thập phân
+      </label>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field" [class.field--locked]="isEdit">
+      <label for="gf-startDate">Ngày bắt đầu *</label>
+      <input id="gf-startDate" type="date" [(ngModel)]="form.startDate" [disabled]="isEdit" />
+      @if (isEdit) {
+        <span class="lock-hint">🔒 Không thể thay đổi sau khi tạo</span>
+      }
+    </div>
+    <div class="field">
+      <label for="gf-endDate">Ngày kết thúc *</label>
+      <input id="gf-endDate" type="date" [(ngModel)]="form.endDate" />
+    </div>
+  </div>
+
+  <div class="field" [class.field--locked]="isEdit">
+    <label>Cách tích lũy</label>
+    <div class="toggle-group">
+      <button
+        type="button"
+        [class.active]="form.accumulationType === 'daily'"
+        (click)="form.accumulationType = 'daily'"
+        [disabled]="isEdit"
+      >
+        📅 Hàng ngày
+      </button>
+      <button
+        type="button"
+        [class.active]="form.accumulationType === 'monthly'"
+        (click)="form.accumulationType = 'monthly'"
+        [disabled]="isEdit"
+      >
+        🗓️ Hàng tháng
+      </button>
+    </div>
+    @if (isEdit) {
+      <span class="lock-hint">🔒 Không thể thay đổi sau khi tạo</span>
+    }
+  </div>
+
+  <div class="field">
+    <label for="gf-description">Mô tả (tuỳ chọn)</label>
+    <input id="gf-description" type="text" [(ngModel)]="form.description" placeholder="Ghi chú thêm..." />
+  </div>
+
+  @if (formError) {
+    <div class="error-msg">{{ formError }}</div>
+  }
+
+  <div class="form-actions">
+    <button type="button" class="btn-secondary" (click)="cancel()">Huỷ</button>
+    <button type="button" class="btn-primary" (click)="submit()">
+      {{ isEdit ? 'Lưu thay đổi' : 'Tạo mục tiêu' }}
+    </button>
+  </div>
+</div>

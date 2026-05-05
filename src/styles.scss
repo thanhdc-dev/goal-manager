@@ -1,0 +1,95 @@
+/* =============================================
+   GoalTracker — Global Styles
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ── CSS Variables (Dark Theme) ── */
+:root {
+  /* Background */
+  --bg:         #0d0d14;
+  --card-bg:    #13131f;
+  --surface:    #1a1a28;
+
+  /* Borders */
+  --border:     #2a2a3d;
+
+  /* Text */
+  --text-primary: #f0f0fa;
+  --muted:        #6b6b8a;
+
+  /* Accent — indigo */
+  --accent:       #7c6ff7;
+  --accent-light: #a89cf9;
+  --accent-soft:  rgba(124,111,247,0.12);
+
+  /* Status colors */
+  --green:      #4ade80;
+  --green-soft: rgba(74,222,128,0.12);
+  --yellow:     #facc15;
+  --yellow-soft:rgba(250,204,21,0.12);
+  --red:        #f87171;
+  --red-soft:   rgba(248,113,113,0.12);
+  --orange:     #fb923c;
+
+  /* Typography */
+  --font: 'Sora', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ── Scrollbar (webkit) ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+  &:hover { background: var(--muted); }
+}
+
+/* ── Selection ── */
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-light);
+}
+
+/* ── Input date fix for dark mode ── */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+}
+
+/* ── Number input — hide arrows ── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* ── Utility ── */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+}

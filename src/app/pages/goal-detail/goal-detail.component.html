@@ -1,0 +1,165 @@
+<div class="detail-page">
+  <!-- Back nav -->
+  <nav class="back-nav">
+    <a routerLink="/" class="back-link">← Quay lại Dashboard</a>
+  </nav>
+
+  @if (goal()) {
+    <div class="detail-content">
+      <!-- Left column -->
+      <aside class="sidebar">
+        <!-- Chart & progress -->
+        <div class="card chart-card">
+          <app-progress-chart [progress]="stats()?.progress ?? 0" />
+
+          <div class="status-row">
+            <span class="status-badge" [class]="'status-' + stats()?.status">
+              {{ statusEmoji }} {{ statusLabel }}
+            </span>
+            <span class="streak" *ngIf="(stats()?.streak ?? 0) > 0">
+              🔥 {{ stats()!.streak }} {{ periodLabel }} liên tiếp
+            </span>
+          </div>
+
+          <!-- Insight message -->
+          <div class="insight-box" [class]="'status-' + stats()?.status">
+            <p class="insight-text">{{ predictionMsg() }}</p>
+          </div>
+
+          <!-- Core stat: required per period -->
+          <div class="required-card" *ngIf="!stats()?.isCompleted && !stats()?.isExpired">
+            <span class="req-label">{{ periodLabel }} tiếp theo cần</span>
+            <span class="req-value">{{ fmt(stats()?.requiredPerPeriod ?? 0) }}</span>
+            <span class="req-unit">{{ goal()!.unit }}</span>
+          </div>
+        </div>
+
+        <!-- Stats breakdown -->
+        <div class="card stats-card">
+          <h3 class="section-title">Thống kê</h3>
+          <div class="stat-list">
+            <div class="stat-row">
+              <span>Đã tích lũy</span>
+              <strong>{{ fmt(stats()?.currentValue ?? 0) }} {{ goal()!.unit }}</strong>
+            </div>
+            <div class="stat-row">
+              <span>Mục tiêu</span>
+              <strong>{{ fmt(goal()!.targetValue) }} {{ goal()!.unit }}</strong>
+            </div>
+            <div class="stat-row">
+              <span>Còn lại</span>
+              <strong>{{ fmt(stats()?.remaining ?? 0) }} {{ goal()!.unit }}</strong>
+            </div>
+            <div class="stat-row">
+              <span>{{ periodLabel | titlecase }} còn lại</span>
+              <strong>{{ stats()?.remainingPeriods ?? 0 }}/{{ stats()?.totalPeriods ?? 0 }}</strong>
+            </div>
+            <div class="stat-row">
+              <span>Tiến độ kỳ vọng</span>
+              <strong>{{ stats()?.expectedProgress | number: "1.0-1" }}%</strong>
+            </div>
+            <div class="stat-row">
+              <span>Giá trị kỳ vọng</span>
+              <strong>{{ fmt(stats()?.expectedValue ?? 0) }} {{ goal()!.unit }}</strong>
+            </div>
+            <div class="stat-row">
+              <span>Dự đoán cuối kỳ</span>
+              <strong>{{ fmt(stats()?.predictedTotal ?? 0) }} {{ goal()!.unit }}</strong>
+            </div>
+          </div>
+
+          <!-- Milestones -->
+          <h4 class="section-title" style="margin-top: 16px">Milestones</h4>
+          <div class="milestones">
+            @for (m of stats()?.milestones; track $index) {
+              <div class="ms" [class.reached]="m.reached">
+                <span class="ms-pct">{{ m.percent }}%</span>
+                <span class="ms-icon">{{ m.reached ? "✅" : "○" }}</span>
+                <span class="ms-date" *ngIf="m.reachedAt">{{ formatDate(m.reachedAt) }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Goal info -->
+          <div class="goal-dates">
+            <span>📅 {{ formatDate(goal()!.startDate) }} → {{ formatDate(goal()!.endDate) }}</span>
+            <span class="type-chip">{{ goal()!.accumulationType === "daily" ? "Hàng ngày" : "Hàng tháng" }}</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right column: logs -->
+      <main class="log-section">
+        <div class="log-header">
+          <h2 class="goal-title">{{ goal()!.name }}</h2>
+          <div class="log-header-actions">
+            <button class="btn-edit-goal" (click)="openEditGoal()">✏️ Sửa mục tiêu</button>
+            <button class="btn-add" (click)="openAddLog()">+ Thêm log</button>
+          </div>
+        </div>
+
+        <p class="goal-desc" *ngIf="goal()!.description">{{ goal()!.description }}</p>
+
+        <!-- Log form inline -->
+        <app-log-form
+          *ngIf="showLogForm()"
+          [goalId]="goal()!.id"
+          [unit]="goal()!.unit"
+          [valueType]="goal()!.valueType"
+          [editLog]="editingLog() ?? undefined"
+          (saved)="onLogSaved()"
+          (cancelled)="closeLogForm()"
+          style="display: block; margin-bottom: 20px"
+        />
+
+        <!-- Log history -->
+        <div class="log-list" *ngIf="logs().length > 0">
+          <div class="log-item" *ngFor="let log of logs()">
+            <div class="log-left">
+              <span class="log-date">{{ formatDate(log.date) }}</span>
+              <span class="log-note" *ngIf="log.note">{{ log.note }}</span>
+            </div>
+            <div class="log-right">
+              <span class="log-value"
+                >+{{ fmt(log.value) }} <span class="log-unit">{{ goal()!.unit }}</span></span
+              >
+              <div class="log-actions">
+                <button class="btn-icon" (click)="openEditLog(log)" title="Sửa">✏️</button>
+                <button class="btn-icon btn-del" (click)="deleteLog(log)" title="Xóa">🗑️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-logs" *ngIf="logs().length === 0 && !showLogForm()">
+          <p>Chưa có log nào. Bắt đầu ghi nhận tiến độ!</p>
+          <button class="btn-add" (click)="openAddLog()">+ Thêm log đầu tiên</button>
+        </div>
+      </main>
+    </div>
+
+    <!-- Edit goal modal -->
+    @if (showEditGoalForm()) {
+      <div class="edit-goal-overlay" (click)="closeEditGoal()" onkeypress="">
+        <div class="edit-goal-modal" (click)="$event.stopPropagation()" onkeypress="">
+          <div class="edit-goal-header">
+            <h2>Chỉnh sửa mục tiêu</h2>
+            <button class="btn-close" (click)="closeEditGoal()">✕</button>
+          </div>
+          <div class="edit-goal-body">
+            <app-goal-form
+              [initialGoal]="goal()!"
+              (saved)="onGoalSaved()"
+              (cancelled)="closeEditGoal()"
+            />
+          </div>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="not-found">
+      <p>Không tìm thấy mục tiêu.</p>
+      <a routerLink="/">← Quay lại</a>
+    </div>
+  }
+</div>
