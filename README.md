@@ -1,95 +1,98 @@
-# 🎯 GoalTracker — MVP
+# 🎯 GoalTracker — Modern Goal Management
 
-Web app quản lý mục tiêu cá nhân, xây dựng bằng **Angular 18** + **Chart.js**, lưu trữ **localStorage**.
+Hệ thống quản lý mục tiêu cá nhân hiện đại, được xây dựng trên nền tảng **Angular 21** kết hợp với **Chart.js**, tập trung vào tính trực quan và khả năng theo dõi tiến độ chính xác.
 
 ---
 
-## 🚀 Cài đặt & Chạy
+## 🚀 Khởi động nhanh
 
 ```bash
-# 1. Cài Node.js 18+ nếu chưa có: https://nodejs.org
-
-# 2. Cài Angular CLI
-npm install -g @angular/cli
-
-# 3. Cài dependencies
+# 1. Cài đặt các phụ thuộc
 npm install
 
-# 4. Chạy dev server
-ng serve
+# 2. Chạy môi trường phát triển
+npm start
 
-# 5. Mở trình duyệt
+# 3. Mở trình duyệt tại:
 # http://localhost:4200
 ```
 
 ---
 
-## 📁 Cấu trúc project
+## 🏗️ Kiến trúc dự án
 
-```
+Dự án tuân thủ cấu trúc thư mục tiêu chuẩn của Angular với sự phân tách rõ ràng giữa Logic (Services) và Giao diện (Components/Pages).
+
+```text
 src/app/
-├── models/
-│   ├── goal.model.ts       # Interface Goal, GoalStats, MilestoneStatus
-│   └── log.model.ts        # Interface Log
-├── services/
-│   ├── goal.service.ts     # CRUD Goals → localStorage
-│   ├── log.service.ts      # CRUD Logs → localStorage
-│   └── calculation.service.ts  # Toàn bộ logic tính toán
-├── components/
-│   ├── goal-card/          # Card hiển thị goal ở dashboard
-│   ├── log-form/           # Form thêm/sửa log
-│   └── progress-chart/     # Doughnut chart (Chart.js)
-└── pages/
-    ├── dashboard/           # Trang chính — danh sách goals
-    └── goal-detail/         # Trang chi tiết — chart, logs, insights
+├── core/
+│   └── services/           # Logic nghiệp vụ & Xử lý dữ liệu
+│       ├── calculation.service.ts  # Thuật toán tính toán tiến độ & dự báo
+│       ├── goal.service.ts         # Quản lý Goals (CRUD)
+│       └── log.service.ts          # Quản lý nhật ký tiến độ (Logs)
+├── shared/
+│   └── models/             # Định nghĩa dữ liệu (Interfaces/Enums)
+│       ├── goal.model.ts       # Goal, Stats, Milestones, Status
+│       └── log.model.ts        # Log structure
+├── components/             # Các thành phần giao diện tái sử dụng
+│   ├── goal-card/          # Hiển thị tóm tắt mục tiêu
+│   ├── goal-form/          # Form tạo và chỉnh sửa mục tiêu
+│   ├── log-form/           # Form ghi nhận tiến độ mới
+│   └── progress-chart/     # Biểu đồ Doughnut trực quan (Chart.js)
+└── pages/                  # Các trang chính của ứng dụng
+    ├── dashboard/          # Trang tổng quan danh sách mục tiêu
+    └── goal-detail/        # Trang chi tiết, biểu đồ và lịch sử log
 ```
 
 ---
 
-## ✨ Tính năng
+## ✨ Tính năng nổi bật
 
-### Quản lý mục tiêu
-- ✅ Tạo / Sửa / Xóa mục tiêu
-- ✅ Tích lũy hàng ngày hoặc hàng tháng
-- ✅ Hỗ trợ mọi đơn vị (VND, km, trang, lần...)
+### 📊 Phân tích tiến độ thông minh
+Hệ thống không chỉ đếm số lượng mà còn phân tích sâu dữ liệu của bạn:
+- **Trạng thái thực tế**: Tự động đánh giá trạng thái dựa trên thời gian:
+  - 🟢 **Ahead**: Vượt mức kỳ vọng.
+  - 🔴 **Behind**: Chậm tiến độ so với kế hoạch.
+  - ✅ **Completed**: Đã hoàn thành.
+  - ⌛ **Expired**: Đã quá hạn.
+- **Dự báo (Prediction)**: Dựa trên tốc độ hiện tại để dự đoán khả năng hoàn thành mục tiêu.
+- **Tốc độ cần thiết**: Tính toán chính xác lượng cần tích lũy mỗi ngày/tháng để đạt đích đúng hạn.
 
-### Theo dõi tiến độ
-- ✅ Thêm / Sửa / Xóa log tiến độ
-- ✅ Biểu đồ tròn (doughnut) trực quan
+### 🎮 Gamification & Động lực
+- **Hệ thống Streak**: Theo dõi chuỗi ngày/tháng liên tục ghi nhận tiến độ.
+- **Milestones**: Tự động đánh dấu các mốc quan trọng (25%, 50%, 75%, 100%).
 
-### Logic tính toán
-| Chỉ số | Công thức |
-|--------|-----------|
-| Tổng tích lũy | `sum(logs)` |
-| % hoàn thành | `current / target × 100` |
-| Cần mỗi kỳ | `remaining / remainingPeriods` |
-| Tiến độ kỳ vọng | `timePassed / totalTime × 100` |
-| Dự đoán cuối kỳ | `avgPerPeriod × totalPeriods` |
-
-### Trạng thái
-- 🟢 **Ahead** — vượt kế hoạch (>5% so với kỳ vọng)
-- 🟡 **On-track** — đúng kế hoạch (±5%)
-- 🔴 **Behind** — chậm tiến độ (<-5%)
-- ✅ **Completed** — đã hoàn thành
-- ⌛ **Expired** — hết hạn
-
-### Gamification
-- 🔥 Streak (ngày/tháng liên tiếp có log)
-- 🏅 Milestones tự động: 25% / 50% / 75% / 100%
+### 🛠️ Linh hoạt tối đa
+- Hỗ trợ đa dạng đơn vị đo lường (VND, km, trang sách, giờ học...).
+- Chế độ tích lũy linh hoạt: **Hàng ngày** hoặc **Hàng tháng**.
+- Quản lý nhật ký tiến độ chi tiết (thêm/sửa/xóa logs).
 
 ---
 
-## 💾 Dữ liệu
+## 💾 Lưu trữ dữ liệu
 
-Lưu trữ hoàn toàn trong `localStorage` của trình duyệt:
-- `gm_goals` — danh sách mục tiêu
-- `gm_logs` — lịch sử log
+Toàn bộ dữ liệu được lưu trữ an toàn và riêng tư trong `localStorage` của trình duyệt:
+- `gm_goals`: Danh sách các mục tiêu.
+- `gm_logs`: Nhật ký tiến độ chi tiết.
+
+*Ứng dụng hoạt động hoàn toàn Offline, không cần server.*
 
 ---
 
-## 🛠️ Build production
+## 🛠️ Công nghệ sử dụng
+
+- **Angular 21**: Framework frontend mạnh mẽ và hiện đại nhất.
+- **Chart.js**: Thư viện biểu đồ hiệu năng cao cho việc trực quan hóa dữ liệu.
+- **SCSS**: Tiền xử lý CSS cho giao diện tinh tế và dễ bảo trì.
+- **TypeScript**: Đảm bảo tính nhất quán và an toàn của dữ liệu.
+
+---
+
+## 📦 Đóng gói sản phẩm
 
 ```bash
-ng build
-# Output: dist/goal-manager/
+# Build production version
+npm run build
+# Sản phẩm sẽ nằm trong thư mục: dist/goal-manager/
 ```
+

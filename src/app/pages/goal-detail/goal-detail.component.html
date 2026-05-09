@@ -14,11 +14,13 @@
 
           <div class="status-row">
             <span class="status-badge" [class]="'status-' + stats()?.status">
-              {{ statusEmoji }} {{ statusLabel }}
+              {{ statusEmoji() }} {{ statusLabel() }}
             </span>
-            <span class="streak" *ngIf="(stats()?.streak ?? 0) > 0">
-              🔥 {{ stats()!.streak }} {{ periodLabel }} liên tiếp
-            </span>
+            @if ((stats()?.streak ?? 0) > 0) {
+              <span class="streak">
+                🔥 {{ stats()!.streak }} {{ periodLabel() }} liên tiếp
+              </span>
+            }
           </div>
 
           <!-- Insight message -->
@@ -27,11 +29,13 @@
           </div>
 
           <!-- Core stat: required per period -->
-          <div class="required-card" *ngIf="!stats()?.isCompleted && !stats()?.isExpired">
-            <span class="req-label">{{ periodLabel }} tiếp theo cần</span>
-            <span class="req-value">{{ fmt(stats()?.requiredPerPeriod ?? 0) }}</span>
-            <span class="req-unit">{{ goal()!.unit }}</span>
-          </div>
+          @if (!stats()?.isCompleted && !stats()?.isExpired) {
+            <div class="required-card">
+              <span class="req-label">{{ periodLabel() }} tiếp theo cần</span>
+              <span class="req-value">{{ fmt(stats()?.requiredPerPeriod ?? 0) }}</span>
+              <span class="req-unit">{{ goal()!.unit }}</span>
+            </div>
+          }
         </div>
 
         <!-- Stats breakdown -->
@@ -51,7 +55,7 @@
               <strong>{{ fmt(stats()?.remaining ?? 0) }} {{ goal()!.unit }}</strong>
             </div>
             <div class="stat-row">
-              <span>{{ periodLabel | titlecase }} còn lại</span>
+              <span>{{ periodLabel() | titlecase }} còn lại</span>
               <strong>{{ stats()?.remainingPeriods ?? 0 }}/{{ stats()?.totalPeriods ?? 0 }}</strong>
             </div>
             <div class="stat-row">
@@ -75,7 +79,7 @@
               <div class="ms" [class.reached]="m.reached">
                 <span class="ms-pct">{{ m.percent }}%</span>
                 <span class="ms-icon">{{ m.reached ? "✅" : "○" }}</span>
-                <span class="ms-date" *ngIf="m.reachedAt">{{ formatDate(m.reachedAt) }}</span>
+                @if (m.reachedAt) { <span class="ms-date">{{ formatDate(m.reachedAt) }}</span> }
               </div>
             }
           </div>
@@ -98,7 +102,9 @@
           </div>
         </div>
 
-        <p class="goal-desc" *ngIf="goal()!.description">{{ goal()!.description }}</p>
+        @if (goal()!.description) {
+          <p class="goal-desc">{{ goal()!.description }}</p>
+        }
 
         <!-- Log form inline -->
         <app-log-form
@@ -113,28 +119,34 @@
         />
 
         <!-- Log history -->
-        <div class="log-list" *ngIf="logs().length > 0">
-          <div class="log-item" *ngFor="let log of logs()">
-            <div class="log-left">
-              <span class="log-date">{{ formatDate(log.date) }}</span>
-              <span class="log-note" *ngIf="log.note">{{ log.note }}</span>
-            </div>
-            <div class="log-right">
-              <span class="log-value"
-                >+{{ fmt(log.value) }} <span class="log-unit">{{ goal()!.unit }}</span></span
-              >
-              <div class="log-actions">
-                <button class="btn-icon" (click)="openEditLog(log)" title="Sửa">✏️</button>
-                <button class="btn-icon btn-del" (click)="deleteLog(log)" title="Xóa">🗑️</button>
+        @if (logs().length > 0) {
+          <div class="log-list">
+            @for (log of logs(); track log.id) {
+              <div class="log-item">
+                <div class="log-left">
+                  <span class="log-date">{{ formatDate(log.date) }}</span>
+                  @if (log.note) { <span class="log-note">{{ log.note }}</span> }
+                </div>
+                <div class="log-right">
+                  <span class="log-value"
+                    >+{{ fmt(log.value) }} <span class="log-unit">{{ goal()!.unit }}</span></span
+                  >
+                  <div class="log-actions">
+                    <button class="btn-icon" (click)="openEditLog(log)" title="Sửa">✏️</button>
+                    <button class="btn-icon btn-del" (click)="deleteLog(log)" title="Xóa">🗑️</button>
+                  </div>
+                </div>
               </div>
-            </div>
+            }
           </div>
-        </div>
+        }
 
-        <div class="no-logs" *ngIf="logs().length === 0 && !showLogForm()">
-          <p>Chưa có log nào. Bắt đầu ghi nhận tiến độ!</p>
-          <button class="btn-add" (click)="openAddLog()">+ Thêm log đầu tiên</button>
-        </div>
+        @if (logs().length === 0 && !showLogForm()) {
+          <div class="no-logs">
+            <p>Chưa có log nào. Bắt đầu ghi nhận tiến độ!</p>
+            <button class="btn-add" (click)="openAddLog()">+ Thêm log đầu tiên</button>
+          </div>
+        }
       </main>
     </div>
 

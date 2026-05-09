@@ -1,68 +1,70 @@
-<div class="goal-card" [class]="'status-' + stats.status" [routerLink]="['/goal', goal.id]">
+<div class="goal-card" [class]="'status-' + stats().status" [routerLink]="['/goal', goal().id]">
   <div class="card-header">
     <div class="card-title-row">
-      <h3 class="goal-name">{{ goal.name }}</h3>
+      <h3 class="goal-name">{{ goal().name }}</h3>
       <div class="card-actions">
         <button class="btn-edit" (click)="onEdit($event)" title="Sửa mục tiêu">✏️</button>
         <button class="btn-delete" (click)="onDelete($event)" title="Xóa mục tiêu">✕</button>
       </div>
     </div>
-    <span class="status-badge">{{ statusEmoji }} {{ statusLabel }}</span>
+    <span class="status-badge">{{ statusEmoji() }} {{ statusLabel() }}</span>
   </div>
 
   <!-- Progress bar -->
   <div class="progress-wrap">
     <div class="progress-bar-bg">
-      <div class="progress-bar-fill" [style.width.%]="stats.progress">
-        @if (stats.progress > 15) {
-          <span class="progress-bar-label">{{ stats.progress | number: "1.0-0" }}%</span>
+      <div class="progress-bar-fill" [style.width.%]="stats().progress">
+        @if (stats().progress > 15) {
+          <span class="progress-bar-label">{{ stats().progress | number: "1.0-0" }}%</span>
         }
       </div>
     </div>
-    @if (stats.progress <= 15) {
-      <span class="progress-pct">{{ stats.progress | number: "1.0-0" }}%</span>
+    @if (stats().progress <= 15) {
+      <span class="progress-pct">{{ stats().progress | number: "1.0-0" }}%</span>
     }
   </div>
 
   <!-- Key stats -->
   <div class="stats-grid">
     <div class="stat">
-      <span class="stat-value">{{ fmt(stats.currentValue) }}</span>
+      <span class="stat-value">{{ fmt(stats().currentValue) }}</span>
       <span class="stat-label">Đã tích lũy</span>
     </div>
     <div class="stat">
-      <span class="stat-value">{{ fmt(stats.remaining) }}</span>
+      <span class="stat-value">{{ fmt(stats().remaining) }}</span>
       <span class="stat-label">Còn lại</span>
     </div>
     <div class="stat highlight">
-      <span class="stat-value">{{ fmt(stats.requiredPerPeriod) }}</span>
-      <span class="stat-label">Cần/{{ periodLabel }}</span>
+      <span class="stat-value">{{ fmt(stats().requiredPerPeriod) }}</span>
+      <span class="stat-label">Cần/{{ periodLabel() }}</span>
     </div>
     <div class="stat">
-      <span class="stat-value">{{ stats.remainingPeriods }}</span>
-      <span class="stat-label">{{ periodLabel | titlecase }} còn lại</span>
+      <span class="stat-value">{{ stats().remainingPeriods }}</span>
+      <span class="stat-label">{{ periodLabel() | titlecase }} còn lại</span>
     </div>
   </div>
 
   <!-- Unit & target -->
   <div class="card-footer">
-    <span class="unit-chip">{{ goal.unit }}</span>
-    <span class="target-info">Mục tiêu: {{ fmt(goal.targetValue) }}</span>
+    <span class="unit-chip">{{ goal().unit }}</span>
+    <span class="target-info">Mục tiêu: {{ fmt(goal().targetValue) }}</span>
 
-    @if (stats.streak > 0) {
-      <span class="streak">🔥 {{ stats.streak }} {{ periodLabel }}</span>
+    @if (stats().streak > 0) {
+      <span class="streak">🔥 {{ stats().streak }} {{ periodLabel() }}</span>
     }
   </div>
 
   <!-- Milestones -->
   <div class="milestones">
-    <div
-      class="milestone-item"
-      *ngFor="let m of stats.milestones"
-      [class.reached]="m.reached"
-      [title]="m.reached ? 'Đạt ' + m.percent + '%' : m.percent + '%'"
-    >
-      {{ m.percent }}%
-    </div>
+    @for (m of stats().milestones; track m.percent) {
+      <div
+        class="milestone-item"
+        [class.reached]="m.reached"
+        [title]="m.reached ? 'Đạt ' + m.percent + '%' : m.percent + '%'"
+      >
+        {{ m.percent }}%
+      </div>
+    }
   </div>
 </div>
+

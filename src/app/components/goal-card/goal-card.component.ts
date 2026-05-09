@@ -1,7 +1,7 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Goal, GoalStats } from '../../shared/models/goal.model';
+import { Goal } from '../../shared/models/goal.model';
 import { LogService } from '../../core/services/log.service';
 import { CalculationService } from '../../core/services/calculation.service';
 
@@ -12,64 +12,66 @@ import { CalculationService } from '../../core/services/calculation.service';
   templateUrl: './goal-card.component.html',
   styleUrls: ['./goal-card.component.scss']
 })
-export class GoalCardComponent implements OnInit, OnChanges {
-  @Input() goal!: Goal;
-  @Output() deleteGoal = new EventEmitter<string>();
-  @Output() editGoal = new EventEmitter<Goal>();
+export class GoalCardComponent {
+  // Signal-based inputs (Angular 17+)
+  readonly goal = input.required<Goal>();
+  readonly deleteGoal = output<string>();
+  readonly editGoal = output<Goal>();
 
   private readonly logService = inject(LogService);
   private readonly calcService = inject(CalculationService);
 
-  stats!: GoalStats;
-  predictionMsg = '';
+  /**
+   * Computed Signal: Tự lấy logs của goal này từ LogService.
+   * Tự động cập nhật khi có log mới được thêm/sửa/xóa ở bất kỳ đâu.
+   */
+  private readonly logs = computed(() =>
+    this.logService.getSignalByGoalId(this.goal().id)()
+  );
 
-  ngOnInit(): void {
-    this.refresh();
-  }
+  /**
+   * Computed Signal: Tự tính stats khi goal hoặc logs thay đổi.
+   * Không cần gọi refresh() thủ công nữa.
+   */
+  readonly stats = computed(() =>
+    this.calcService.computeStats(this.goal(), this.logs())
+  );
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['goal'] && !changes['goal'].firstChange) {
-      this.refresh();
-    }
-  }
+  readonly predictionMsg = computed(() =>
+    this.calcService.getPredictionMessage(this.goal(), this.stats())
+  );
 
-  refresh(): void {
-    const logs = this.logService.getByGoalId(this.goal.id);
-    this.stats = this.calcService.computeStats(this.goal, logs);
-    this.predictionMsg = this.calcService.getPredictionMessage(this.goal, this.stats);
-  }
-
-  get statusEmoji(): string {
+  readonly statusEmoji = computed(() => {
     const map: Record<string, string> = {
       ahead: '🟢', 'on-track': '🟡', behind: '🔴',
       completed: '✅', expired: '⌛'
     };
-    return map[this.stats.status] ?? '⬜';
-  }
+    return map[this.stats().status] ?? '⬜';
+  });
 
-  get statusLabel(): string {
+  readonly statusLabel = computed(() => {
     const map: Record<string, string> = {
       ahead: 'Vượt kế hoạch', 'on-track': 'Đúng kế hoạch',
       behind: 'Chậm tiến độ', completed: 'Hoàn thành', expired: 'Hết hạn'
     };
-    return map[this.stats.status] ?? '';
-  }
+    return map[this.stats().status] ?? '';
+  });
 
-  get periodLabel(): string {
-    return this.goal.accumulationType === 'daily' ? 'ngày' : 'tháng';
-  }
+  readonly periodLabel = computed(() =>
+    this.goal().accumulationType === 'daily' ? 'ngày' : 'tháng'
+  );
 
   onEdit(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this.editGoal.emit(this.goal);
+    this.editGoal.emit(this.goal());
   }
 
   onDelete(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    if (confirm(`Xóa mục tiêu "${this.goal.name}"?`)) {
-      this.deleteGoal.emit(this.goal.id);
+    if (confirm(`Xóa mục tiêu "${this.goal().name}"?`)) {
+      this.deleteGoal.emit(this.goal().id);
     }
   }
 
@@ -77,3 +79,4 @@ export class GoalCardComponent implements OnInit, OnChanges {
     return this.calcService.formatNumber(n);
   }
 }
+

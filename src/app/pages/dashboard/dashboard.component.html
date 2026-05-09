@@ -42,7 +42,9 @@
 
     @if (goals().length > 0) {
       <div class="goals-grid">
-        <app-goal-card *ngFor="let goal of goals()" [goal]="goal" (editGoal)="openForm($event)" (deleteGoal)="deleteGoal($event)" />
+        @for (goal of goals(); track goal.id) {
+          <app-goal-card [goal]="goal" (editGoal)="openForm($event)" (deleteGoal)="deleteGoal($event)" />
+        }
       </div>
     }
   </main>

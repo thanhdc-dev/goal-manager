@@ -1,5 +1,5 @@
 // src/app/core/services/log.service.ts
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, Signal, signal, computed } from '@angular/core';
 import { Log } from '../../shared/models/log.model';
 
 const STORAGE_KEY = 'gm_logs';
@@ -10,13 +10,35 @@ export class LogService {
 
   readonly logs = this._logs.asReadonly();
 
-  // Computed: Lọc logs theo goalId (Tối ưu: chỉ tính toán khi goalId thay đổi)
-  // Lưu ý: Trong thực tế, nếu có nhiều goal, nên dùng một Map hoặc tính toán trong component
-  // Nhưng để đơn giản, ta dùng computed với một tham số động (không được trong signal thuần)
-  // Giải pháp: Tạo một hàm getter hoặc dùng computed trong component.
+  /**
+   * Computed Signal: Nhóm toàn bộ logs theo goalId thành một Map.
+   * Được tính toán lại tự động mỗi khi `_logs` thay đổi.
+   * Cho phép các component lấy logs reactive theo goalId mà không cần gọi thủ công.
+   */
+  readonly logsMap = computed<Map<string, Log[]>>(() => {
+    const map = new Map<string, Log[]>();
+    for (const log of this._logs()) {
+      const existing = map.get(log.goalId) ?? [];
+      map.set(log.goalId, [...existing, log]);
+    }
+    return map;
+  });
 
-  // Tuy nhiên, để tối ưu hiệu suất khi render danh sách logs, ta sẽ không filter toàn bộ logs ở đây
-  // mà để component tự filter dựa trên goalId hiện tại.
+  /**
+   * Trả về một Computed Signal chứa danh sách logs (đã sắp xếp mới nhất trước)
+   * của một goal cụ thể. Signal này tự cập nhật khi có log mới được thêm/sửa/xóa.
+   */
+  getSignalByGoalId(goalId: string): Signal<Log[]> {
+    return computed(() =>
+      (this.logsMap().get(goalId) ?? [])
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    );
+  }
+
+  /** @deprecated Dùng getSignalByGoalId() để có reactivity đầy đủ */
+  getByGoalId(goalId: string): Log[] {
+    return this._logs().filter(l => l.goalId === goalId);
+  }
 
   private load(): Log[] {
     try {
@@ -31,41 +53,33 @@ export class LogService {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
   }
 
-  // Hàm helper để lấy logs của một goal cụ thể (nên dùng trong component)
-  getByGoalId(goalId: string): Log[] {
-    return this._logs().filter(l => l.goalId === goalId);
-  }
-
   create(data: Omit<Log, 'id' | 'createdAt'>): Log {
     const log: Log = {
       ...data,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
-    const updated = [...this._logs(), log];
-    this._logs.set(updated);
-    this.save(updated);
+    this._logs.update(prev => [...prev, log]);
+    this.save(this._logs());
     return log;
   }
 
   update(id: string, data: Partial<Omit<Log, 'id' | 'createdAt'>>): void {
-    const updated = this._logs().map(l =>
-      l.id === id ? { ...l, ...data } : l
+    this._logs.update(prev =>
+      prev.map(l => l.id === id ? { ...l, ...data } : l)
     );
-    this._logs.set(updated);
-    this.save(updated);
+    this.save(this._logs());
   }
 
   delete(id: string): void {
-    const updated = this._logs().filter(l => l.id !== id);
-    this._logs.set(updated);
-    this.save(updated);
+    this._logs.update(prev => prev.filter(l => l.id !== id));
+    this.save(this._logs());
   }
 
   deleteByGoalId(goalId: string): void {
-    const updated = this._logs().filter(l => l.goalId !== goalId);
-    this._logs.set(updated);
-    this.save(updated);
+    this._logs.update(prev => prev.filter(l => l.goalId !== goalId));
+    this.save(this._logs());
   }
 }
+
 
