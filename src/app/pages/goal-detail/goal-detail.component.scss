@@ -16,7 +16,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   transition: color 0.15s;
-  &:hover { color: var(--accent); }
+  &:hover { color: var(--goal-color); }
 }
 
 .detail-content {
@@ -78,7 +78,7 @@
   padding: 12px 16px;
   border-radius: 12px;
   background: var(--surface);
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--goal-color);
   text-align: left;
 
   &.status-ahead { border-left-color: var(--green); }
@@ -94,7 +94,7 @@
 }
 
 .required-card {
-  background: var(--accent-soft);
+  background: var(--goal-color-soft);
   border-radius: 12px;
   padding: 16px;
   margin-top: 12px;
@@ -107,7 +107,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--accent);
+  color: var(--goal-color);
   margin-bottom: 4px;
 }
 
@@ -115,14 +115,14 @@
   display: inline;
   font-size: 2rem;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--goal-color);
   line-height: 1;
 }
 
 .req-unit {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--goal-color);
   margin-left: 4px;
 }
 
@@ -166,9 +166,9 @@
   transition: all 0.2s;
 
   &.reached {
-    background: var(--accent-soft);
-    border-color: var(--accent);
-    .ms-pct { color: var(--accent); }
+    background: var(--goal-color-soft);
+    border-color: var(--goal-color);
+    .ms-pct { color: var(--goal-color); }
   }
 }
 
@@ -223,7 +223,7 @@
   font-family: inherit;
   transition: border-color 0.15s, color 0.15s;
   white-space: nowrap;
-  &:hover { border-color: var(--accent); color: var(--accent); }
+  &:hover { border-color: var(--goal-color); color: var(--goal-color); }
 }
 
 /* Edit goal modal */
@@ -301,7 +301,7 @@
 }
 
 .btn-add {
-  background: var(--accent);
+  background: var(--goal-color);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -340,7 +340,7 @@
   gap: 12px;
   transition: border-color 0.15s;
 
-  &:hover { border-color: var(--accent); }
+  &:hover { border-color: var(--goal-color); }
 }
 
 .log-left {

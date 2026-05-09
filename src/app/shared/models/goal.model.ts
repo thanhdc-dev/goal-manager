@@ -22,6 +22,7 @@ export interface Goal {
   endDate: string;   // ISO string (YYYY-MM-DD)
   accumulationType: AccumulationType;
   description?: string;
+  color?: string;    // Màu chủ đạo của mục tiêu (hex), VD: '#4ade80'
   createdAt: string; // ISO string
 }
 

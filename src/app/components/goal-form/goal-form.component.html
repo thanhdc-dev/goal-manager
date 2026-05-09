@@ -76,6 +76,22 @@
   </div>
 
   <div class="field">
+    <label>Màu sắc chủ đạo</label>
+    <div class="color-presets">
+      @for (c of presetColors; track c) {
+        <button
+          type="button"
+          class="color-dot"
+          [style.background-color]="c"
+          [class.active]="form.color === c"
+          (click)="form.color = c"
+          [title]="c"
+        ></button>
+      }
+    </div>
+  </div>
+
+  <div class="field">
     <label for="gf-description">Mô tả (tuỳ chọn)</label>
     <input id="gf-description" type="text" [(ngModel)]="form.description" placeholder="Ghi chú thêm..." />
   </div>

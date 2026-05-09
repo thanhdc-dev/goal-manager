@@ -5,7 +5,12 @@
         <h1 class="app-title">🎯 GoalTracker</h1>
         <p class="app-sub">Theo dõi và chinh phục mục tiêu của bạn</p>
       </div>
-      <button class="btn-add" (click)="openForm()">+ Thêm mục tiêu</button>
+      <div class="header-actions">
+        <button class="btn-icon theme-toggle" (click)="themeService.toggle()" [title]="themeService.isDark() ? 'Chuyển sang nền sáng' : 'Chuyển sang nền tối'">
+          {{ themeService.isDark() ? '☀️' : '🌙' }}
+        </button>
+        <button class="btn-add" (click)="openForm()">+ Thêm mục tiêu</button>
+      </div>
     </div>
   </header>
 

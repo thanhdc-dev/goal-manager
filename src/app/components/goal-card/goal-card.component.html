@@ -1,4 +1,4 @@
-<div class="goal-card" [class]="'status-' + stats().status" [routerLink]="['/goal', goal().id]">
+<div class="goal-card" [class]="'status-' + stats().status" [style]="goalStyle()" [routerLink]="['/goal', goal().id]">
   <div class="card-header">
     <div class="card-title-row">
       <h3 class="goal-name">{{ goal().name }}</h3>

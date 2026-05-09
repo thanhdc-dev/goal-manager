@@ -31,7 +31,21 @@ export class GoalFormComponent implements OnInit {
     endDate: '',
     accumulationType: 'daily' as AccumulationType,
     description: '',
+    color: '#7c6ff7', // Mặc định là indigo
   };
+
+  presetColors = [
+    '#7c6ff7', // Indigo
+    '#4ade80', // Green
+    '#fb923c', // Orange
+    '#f87171', // Red
+    '#38bdf8', // Sky
+    '#e879f9', // Pink
+    '#facc15', // Yellow
+    '#a855f7', // Purple
+    '#14b8a6', // Teal
+    '#64748b', // Slate
+  ];
 
   formError = '';
 
@@ -51,6 +65,7 @@ export class GoalFormComponent implements OnInit {
         endDate: g.endDate.split('T')[0],
         accumulationType: g.accumulationType,
         description: g.description ?? '',
+        color: g.color ?? '#7c6ff7',
       };
     } else {
       this.form.startDate = new Date().toISOString().split('T')[0];
@@ -80,6 +95,7 @@ export class GoalFormComponent implements OnInit {
       endDate: new Date(this.form.endDate + 'T00:00:00').toISOString(),
       accumulationType: this.form.accumulationType,
       description: this.form.description.trim() || undefined,
+      color: this.form.color,
     };
 
     if (this.initialGoal) {

@@ -148,3 +148,29 @@
   border: 1.5px solid var(--border);
   &:hover { border-color: var(--text-primary); color: var(--text-primary); }
 }
+
+.color-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.color-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  padding: 0;
+
+  &:hover { transform: scale(1.15); }
+  
+  &.active {
+    border-color: var(--text-primary);
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2px var(--card-bg), 0 0 0 4px var(--text-primary);
+  }
+}
+

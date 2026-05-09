@@ -4,7 +4,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* ── CSS Variables (Dark Theme) ── */
+/* ── CSS Variables (Dark Theme — mặc định) ── */
 :root {
   /* Background */
   --bg:         #0d0d14;
@@ -35,13 +35,48 @@
   /* Typography */
   --font: 'Sora', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Per-goal color (overridden per card via inline style) */
+  --goal-color:       #7c6ff7;
+  --goal-color-soft:  rgba(124,111,247,0.14);
+  --goal-color-light: #a89cf9;
 }
+
+/* ── Light Mode ── */
+[data-theme="light"] {
+  --bg:         #f5f5fb;
+  --card-bg:    #ffffff;
+  --surface:    #eeeef8;
+
+  --border:     #ddddf0;
+
+  --text-primary: #111128;
+  --muted:        #8888aa;
+
+  --accent:       #6c5ff5;
+  --accent-light: #9080f8;
+  --accent-soft:  rgba(108,95,245,0.10);
+
+  --green:      #16a34a;
+  --green-soft: rgba(22,163,74,0.10);
+  --yellow:     #ca8a04;
+  --yellow-soft:rgba(202,138,4,0.10);
+  --red:        #dc2626;
+  --red-soft:   rgba(220,38,38,0.10);
+  --orange:     #ea580c;
+}
+
 
 /* ── Reset ── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* ── Theme transition ── */
+body, .goal-card, .dash-header, .modal, .card {
+  transition: background-color 0.25s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 html {

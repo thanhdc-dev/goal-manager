@@ -13,14 +13,14 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
-    background: var(--accent);
+    background: var(--goal-color);
     transition: height 0.2s ease;
   }
 
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-    border-color: var(--accent);
+    border-color: var(--goal-color);
     &::before { height: 4px; }
   }
 
@@ -70,7 +70,7 @@
 }
 
 .btn-edit {
-  &:hover { background: var(--accent-soft, rgba(99,102,241,0.12)); color: var(--accent); }
+  &:hover { background: var(--goal-color-soft); color: var(--goal-color); }
 }
 
 .btn-delete {
@@ -103,7 +103,7 @@
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  background: linear-gradient(90deg, var(--goal-color), var(--goal-color-light));
   border-radius: 99px;
   transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
   display: flex;
@@ -141,8 +141,8 @@
   background: var(--surface);
 
   &.highlight {
-    background: var(--accent-soft);
-    .stat-value { color: var(--accent); }
+    background: var(--goal-color-soft);
+    .stat-value { color: var(--goal-color); }
   }
 }
 
@@ -213,8 +213,8 @@
   transition: background 0.2s, color 0.2s;
 
   &.reached {
-    background: var(--accent-soft);
-    color: var(--accent);
-    border-color: var(--accent);
+    background: var(--goal-color-soft);
+    color: var(--goal-color);
+    border-color: var(--goal-color);
   }
 }

@@ -6,6 +6,7 @@ import { LogService } from '../../core/services/log.service';
 import { GoalCardComponent } from '../../components/goal-card/goal-card.component';
 import { GoalFormComponent } from '../../components/goal-form/goal-form.component';
 import { Goal } from '../../shared/models/goal.model';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,6 +18,7 @@ import { Goal } from '../../shared/models/goal.model';
 export class DashboardComponent {
   private readonly goalService = inject(GoalService);
   private readonly logService = inject(LogService);
+  readonly themeService = inject(ThemeService);
 
   goals = this.goalService.goals;
   showForm = signal(false);

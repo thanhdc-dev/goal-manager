@@ -29,7 +29,9 @@ src/app/
 │   └── services/           # Logic nghiệp vụ & Xử lý dữ liệu
 │       ├── calculation.service.ts  # Thuật toán tính toán tiến độ & dự báo
 │       ├── goal.service.ts         # Quản lý Goals (CRUD)
-│       └── log.service.ts          # Quản lý nhật ký tiến độ (Logs)
+│       ├── log.service.ts          # Quản lý nhật ký tiến độ (Logs)
+│       ├── theme.service.ts        # Quản lý Dark/Light mode
+│       └── pwa-update.service.ts   # Quản lý cập nhật PWA tự động
 ├── shared/
 │   └── models/             # Định nghĩa dữ liệu (Interfaces/Enums)
 │       ├── goal.model.ts       # Goal, Stats, Milestones, Status
@@ -62,6 +64,11 @@ Hệ thống không chỉ đếm số lượng mà còn phân tích sâu dữ li
 - **Hệ thống Streak**: Theo dõi chuỗi ngày/tháng liên tục ghi nhận tiến độ.
 - **Milestones**: Tự động đánh dấu các mốc quan trọng (25%, 50%, 75%, 100%).
 
+### 🎨 Cá nhân hóa & Giao diện
+- **Dark & Light Mode**: Hỗ trợ đầy đủ chế độ nền tối/sáng, bảo vệ mắt và tiết kiệm pin.
+- **Tùy chỉnh màu sắc**: Chọn màu sắc chủ đạo riêng cho từng mục tiêu (Tài chính: Xanh lá, Sức khỏe: Cam, Học tập: Tím...) để dễ dàng phân loại và theo dõi trực quan.
+- **Thiết kế Premium**: Giao diện hiện đại, hiệu ứng chuyển cảnh mềm mại và trải nghiệm người dùng mượt mà.
+
 ### 🛠️ Linh hoạt tối đa
 - Hỗ trợ đa dạng đơn vị đo lường (VND, km, trang sách, giờ học...).
 - Chế độ tích lũy linh hoạt: **Hàng ngày** hoặc **Hàng tháng**.
@@ -74,6 +81,7 @@ Hệ thống không chỉ đếm số lượng mà còn phân tích sâu dữ li
 Toàn bộ dữ liệu được lưu trữ an toàn và riêng tư trong `localStorage` của trình duyệt:
 - `gm_goals`: Danh sách các mục tiêu.
 - `gm_logs`: Nhật ký tiến độ chi tiết.
+- `gm_theme`: Tùy chọn giao diện người dùng (Dark/Light).
 
 *Ứng dụng hoạt động hoàn toàn Offline, không cần server.*
 
@@ -81,7 +89,7 @@ Toàn bộ dữ liệu được lưu trữ an toàn và riêng tư trong `localS
 
 ## 🛠️ Công nghệ sử dụng
 
-- **Angular 21**: Framework frontend mạnh mẽ và hiện đại nhất.
+- **Angular 21**: Sử dụng **Signals** cho State Management giúp tăng hiệu suất cực cao.
 - **Angular Service Worker**: PWA, caching, offline support.
 - **Chart.js**: Thư viện biểu đồ hiệu năng cao cho việc trực quan hóa dữ liệu.
 - **SCSS**: Tiền xử lý CSS cho giao diện tinh tế và dễ bảo trì.

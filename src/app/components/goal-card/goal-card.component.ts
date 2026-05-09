@@ -61,6 +61,35 @@ export class GoalCardComponent {
     this.goal().accumulationType === 'daily' ? 'ngày' : 'tháng'
   );
 
+  /**
+   * Computed: CSS custom properties cho màu riêng của từng goal.
+   * Được áp dụng qua [style] binding trên host element.
+   */
+  readonly goalStyle = computed(() => {
+    const color = this.goal().color;
+    if (!color) return {};
+    return {
+      '--goal-color': color,
+      '--goal-color-soft': this.hexToRgba(color, 0.14),
+      '--goal-color-light': this.lighten(color),
+    };
+  });
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  private lighten(hex: string): string {
+    // Tăng lightness ~20% bằng cách pha trắng
+    const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 40);
+    const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 40);
+    const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 40);
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+  }
+
   onEdit(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
