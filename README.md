@@ -82,9 +82,32 @@ Toàn bộ dữ liệu được lưu trữ an toàn và riêng tư trong `localS
 ## 🛠️ Công nghệ sử dụng
 
 - **Angular 21**: Framework frontend mạnh mẽ và hiện đại nhất.
+- **Angular Service Worker**: PWA, caching, offline support.
 - **Chart.js**: Thư viện biểu đồ hiệu năng cao cho việc trực quan hóa dữ liệu.
 - **SCSS**: Tiền xử lý CSS cho giao diện tinh tế và dễ bảo trì.
 - **TypeScript**: Đảm bảo tính nhất quán và an toàn của dữ liệu.
+
+---
+
+## 📱 PWA — Cài đặt như ứng dụng native
+
+GoalTracker là một **Progressive Web App** — có thể cài đặt và sử dụng như ứng dụng thật trên điện thoại và máy tính.
+
+### Cài đặt trên điện thoại (iOS / Android)
+1. Mở GoalTracker trong trình duyệt Safari (iOS) hoặc Chrome (Android).
+2. Nhấn nút **Share** (iOS) hoặc menu ⋮ (Android).
+3. Chọn **"Thêm vào Màn hình chính"** / **"Add to Home Screen"**.
+4. Ứng dụng sẽ xuất hiện như một app thật — không có thanh địa chỉ trình duyệt.
+
+### Cài đặt trên máy tính (Chrome / Edge)
+1. Mở GoalTracker trong Chrome hoặc Edge.
+2. Nhấn biểu tượng **cài đặt** (⊕) ở góc phải thanh địa chỉ.
+3. Chọn **"Cài đặt GoalTracker"**.
+
+### Tính năng Offline
+- Ứng dụng hoạt động **hoàn toàn không cần Internet** sau lần truy cập đầu tiên.
+- Service Worker tự động cache toàn bộ tài nguyên (JS, CSS, icons).
+- Khi có phiên bản mới, ứng dụng sẽ **thông báo và tự cập nhật**.
 
 ---
 
