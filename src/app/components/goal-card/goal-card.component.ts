@@ -10,7 +10,6 @@ import { CalculationService } from '../../core/services/calculation.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './goal-card.component.html',
-  styleUrls: ['./goal-card.component.scss']
 })
 export class GoalCardComponent {
   // Signal-based inputs (Angular 17+)

@@ -15,7 +15,6 @@ import { GoalFormComponent } from '../../components/goal-form/goal-form.componen
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, ProgressChartComponent, LogFormComponent, GoalFormComponent],
   templateUrl: './goal-detail.component.html',
-  styleUrls: ['./goal-detail.component.scss']
 })
 export class GoalDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

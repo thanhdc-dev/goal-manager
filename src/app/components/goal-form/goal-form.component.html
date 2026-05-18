@@ -1,12 +1,18 @@
-<div class="goal-form">
-  <div class="field">
-    <label for="gf-name">Tên mục tiêu *</label>
-    <input id="gf-name" type="text" [(ngModel)]="form.name" placeholder="VD: Tiết kiệm mua nhà..." />
+<div class="flex flex-col gap-4 animate-fade-in">
+  <div class="flex flex-col">
+    <label for="gf-name" class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Tên mục tiêu *</label>
+    <input 
+      id="gf-name" 
+      type="text" 
+      [(ngModel)]="form.name" 
+      placeholder="VD: Tiết kiệm mua nhà..." 
+      class="w-full bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-3 text-app-text text-sm placeholder-app-muted/50 focus:outline-none focus:border-app-accent transition-all duration-150"
+    />
   </div>
 
-  <div class="field-row">
-    <div class="field">
-      <label for="gf-targetValue">Giá trị mục tiêu *</label>
+  <div class="grid grid-cols-2 gap-4">
+    <div class="flex flex-col">
+      <label for="gf-targetValue" class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Giá trị mục tiêu *</label>
       <input
         id="gf-targetValue"
         type="number"
@@ -14,48 +20,84 @@
         placeholder="1000000"
         min="1"
         step="any"
+        class="w-full bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-3 text-app-text text-sm placeholder-app-muted/50 focus:outline-none focus:border-app-accent transition-all duration-150"
       />
     </div>
-    <div class="field">
-      <label for="gf-unit">Đơn vị *</label>
-      <input id="gf-unit" type="text" [(ngModel)]="form.unit" placeholder="VND, km, quyển sách..." />
+    <div class="flex flex-col">
+      <label for="gf-unit" class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Đơn vị *</label>
+      <input 
+        id="gf-unit" 
+        type="text" 
+        [(ngModel)]="form.unit" 
+        placeholder="VND, km, quyển sách..." 
+        class="w-full bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-3 text-app-text text-sm placeholder-app-muted/50 focus:outline-none focus:border-app-accent transition-all duration-150"
+      />
     </div>
   </div>
 
-  <div class="field">
-    <label>Loại *</label>
-    <div class="radio-group">
-      <label class="radio-label" for="gf-integer">
-        <input id="gf-integer" type="radio" [(ngModel)]="form.valueType" name="gf-valueType" value="integer" />
-        <span class="radio-dot"></span> Số nguyên
+  <div class="flex flex-col">
+    <label class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Loại *</label>
+    <div class="flex gap-5 py-1">
+      <label class="flex items-center gap-2 text-sm text-app-text font-medium cursor-pointer" for="gf-integer">
+        <input 
+          id="gf-integer" 
+          type="radio" 
+          [(ngModel)]="form.valueType" 
+          name="gf-valueType" 
+          value="integer" 
+          class="w-4 h-4 cursor-pointer accent-app-accent"
+        />
+        Số nguyên
       </label>
-      <label class="radio-label" for="gf-decimal">
-        <input id="gf-decimal" type="radio" [(ngModel)]="form.valueType" name="gf-valueType" value="decimal" />
-        <span class="radio-dot"></span> Số thập phân
+      <label class="flex items-center gap-2 text-sm text-app-text font-medium cursor-pointer" for="gf-decimal">
+        <input 
+          id="gf-decimal" 
+          type="radio" 
+          [(ngModel)]="form.valueType" 
+          name="gf-valueType" 
+          value="decimal" 
+          class="w-4 h-4 cursor-pointer accent-app-accent"
+        />
+        Số thập phân
       </label>
     </div>
   </div>
 
-  <div class="field-row">
-    <div class="field" [class.field--locked]="isEdit">
-      <label for="gf-startDate">Ngày bắt đầu *</label>
-      <input id="gf-startDate" type="date" [(ngModel)]="form.startDate" [disabled]="isEdit" />
+  <div class="grid grid-cols-2 gap-4">
+    <div class="flex flex-col" [class.opacity-70]="isEdit">
+      <label for="gf-startDate" class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Ngày bắt đầu *</label>
+      <input 
+        id="gf-startDate" 
+        type="date" 
+        [(ngModel)]="form.startDate" 
+        [disabled]="isEdit" 
+        class="w-full bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-3 text-app-text text-sm placeholder-app-muted/50 focus:outline-none focus:border-app-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+      />
       @if (isEdit) {
-        <span class="lock-hint">🔒 Không thể thay đổi sau khi tạo</span>
+        <span class="block mt-1 text-[0.72rem] text-app-muted font-semibold">🔒 Không thể thay đổi sau khi tạo</span>
       }
     </div>
-    <div class="field">
-      <label for="gf-endDate">Ngày kết thúc *</label>
-      <input id="gf-endDate" type="date" [(ngModel)]="form.endDate" />
+    <div class="flex flex-col">
+      <label for="gf-endDate" class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Ngày kết thúc *</label>
+      <input 
+        id="gf-endDate" 
+        type="date" 
+        [(ngModel)]="form.endDate" 
+        class="w-full bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-3 text-app-text text-sm placeholder-app-muted/50 focus:outline-none focus:border-app-accent transition-all duration-150"
+      />
     </div>
   </div>
 
-  <div class="field" [class.field--locked]="isEdit">
-    <label>Cách tích lũy</label>
-    <div class="toggle-group">
+  <div class="flex flex-col" [class.opacity-70]="isEdit">
+    <label class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Cách tích lũy</label>
+    <div class="flex gap-2">
       <button
         type="button"
-        [class.active]="form.accumulationType === 'daily'"
+        class="flex-1 py-3 px-4 rounded-xl border-[1.5px] text-sm font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+        [ngClass]="{
+          'bg-app-accent-soft text-app-accent border-app-accent': form.accumulationType === 'daily',
+          'bg-app-surface text-app-muted border-app-border hover:border-app-text hover:text-app-text': form.accumulationType !== 'daily'
+        }"
         (click)="form.accumulationType = 'daily'"
         [disabled]="isEdit"
       >
@@ -63,7 +105,11 @@
       </button>
       <button
         type="button"
-        [class.active]="form.accumulationType === 'monthly'"
+        class="flex-1 py-3 px-4 rounded-xl border-[1.5px] text-sm font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+        [ngClass]="{
+          'bg-app-accent-soft text-app-accent border-app-accent': form.accumulationType === 'monthly',
+          'bg-app-surface text-app-muted border-app-border hover:border-app-text hover:text-app-text': form.accumulationType !== 'monthly'
+        }"
         (click)="form.accumulationType = 'monthly'"
         [disabled]="isEdit"
       >
@@ -71,19 +117,22 @@
       </button>
     </div>
     @if (isEdit) {
-      <span class="lock-hint">🔒 Không thể thay đổi sau khi tạo</span>
+      <span class="block mt-1 text-[0.72rem] text-app-muted font-semibold">🔒 Không thể thay đổi sau khi tạo</span>
     }
   </div>
 
-  <div class="field">
-    <label>Màu sắc chủ đạo</label>
-    <div class="color-presets">
+  <div class="flex flex-col">
+    <label class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Màu sắc chủ đạo</label>
+    <div class="flex flex-wrap gap-2.5 py-1">
       @for (c of presetColors; track c) {
         <button
           type="button"
-          class="color-dot"
+          class="w-7 h-7 rounded-full border-2 cursor-pointer hover:scale-115 active:scale-90 transition-all duration-150 p-0 focus:outline-none"
           [style.background-color]="c"
-          [class.active]="form.color === c"
+          [ngClass]="{
+            'border-app-text scale-110 shadow-[0_0_0_2px_var(--card-bg),0_0_0_4px_var(--text-primary)]': form.color === c,
+            'border-transparent': form.color !== c
+          }"
           (click)="form.color = c"
           [title]="c"
         ></button>
@@ -91,18 +140,32 @@
     </div>
   </div>
 
-  <div class="field">
-    <label for="gf-description">Mô tả (tuỳ chọn)</label>
-    <input id="gf-description" type="text" [(ngModel)]="form.description" placeholder="Ghi chú thêm..." />
+  <div class="flex flex-col">
+    <label for="gf-description" class="block text-[0.74rem] font-bold uppercase tracking-wider text-app-muted mb-1.5 ml-1">Mô tả (tuỳ chọn)</label>
+    <input 
+      id="gf-description" 
+      type="text" 
+      [(ngModel)]="form.description" 
+      placeholder="Ghi chú thêm..." 
+      class="w-full bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-3 text-app-text text-sm placeholder-app-muted/50 focus:outline-none focus:border-app-accent transition-all duration-150"
+    />
   </div>
 
   @if (formError) {
-    <div class="error-msg">{{ formError }}</div>
+    <div class="text-app-red text-xs font-semibold mb-2 ml-1 animate-[fadeIn_0.2s_ease]">{{ formError }}</div>
   }
 
-  <div class="form-actions">
-    <button type="button" class="btn-secondary" (click)="cancel()">Huỷ</button>
-    <button type="button" class="btn-primary" (click)="submit()">
+  <div class="flex gap-2.5 justify-end mt-2">
+    <button 
+      type="button" 
+      class="bg-app-surface border-[1.5px] border-app-border text-app-muted rounded-xl px-5 py-3 text-sm font-bold cursor-pointer hover:border-app-text hover:text-app-text transition-all duration-150 active:scale-95" 
+      (click)="cancel()"
+    >Huỷ</button>
+    <button 
+      type="button" 
+      class="bg-app-accent hover:bg-app-accent-light text-white border-none rounded-xl px-5 py-3 text-sm font-bold cursor-pointer transition-all duration-150 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" 
+      (click)="submit()"
+    >
       {{ isEdit ? 'Lưu thay đổi' : 'Tạo mục tiêu' }}
     </button>
   </div>

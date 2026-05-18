@@ -1,9 +1,9 @@
-<div class="log-form">
-  <h4 class="form-title">{{ editLog ? "Sửa log" : "Thêm tiến độ" }}</h4>
+<div class="bg-app-card border-[1.5px] border-app-border rounded-2xl p-5 shadow-lg animate-fade-in">
+  <h4 class="text-[0.95rem] font-extrabold text-app-text m-0 mb-4">{{ editLog ? "Sửa log" : "Thêm tiến độ" }}</h4>
 
-  <div class="field-row">
-    <div class="field">
-      <label for="value">Giá trị ({{ unit }})</label>
+  <div class="grid grid-cols-2 gap-3 mb-3">
+    <div class="flex flex-col gap-1.5">
+      <label for="value" class="text-[0.75rem] font-bold text-app-muted uppercase tracking-wider">Giá trị ({{ unit }})</label>
       <input
         id="value"
         type="number"
@@ -12,26 +12,38 @@
         [min]="isInteger() ? 0 : 0.01"
         [step]="isInteger() ? 1 : 0.01"
         (input)="onInput($event)"
+        class="bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-2.5 text-app-text text-sm placeholder-app-muted/60 focus:outline-none focus:border-app-accent transition-all duration-150"
       />
     </div>
-    <div class="field">
-      <label for="date">Ngày</label>
-      <input id="date" type="date" [(ngModel)]="date" />
+    <div class="flex flex-col gap-1.5">
+      <label for="date" class="text-[0.75rem] font-bold text-app-muted uppercase tracking-wider">Ngày</label>
+      <input 
+        id="date" 
+        type="date" 
+        [(ngModel)]="date" 
+        class="bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-2.5 text-app-text text-sm placeholder-app-muted/60 focus:outline-none focus:border-app-accent transition-all duration-150"
+      />
     </div>
   </div>
 
-  <div class="field">
-    <label for="note">Ghi chú (tuỳ chọn)</label>
-    <input id="note" type="text" [(ngModel)]="note" placeholder="Mô tả ngắn..." />
+  <div class="flex flex-col gap-1.5 mb-4">
+    <label for="note" class="text-[0.75rem] font-bold text-app-muted uppercase tracking-wider">Ghi chú (tuỳ chọn)</label>
+    <input 
+      id="note" 
+      type="text" 
+      [(ngModel)]="note" 
+      placeholder="Mô tả ngắn..." 
+      class="bg-app-surface border-[1.5px] border-app-border rounded-xl px-4 py-2.5 text-app-text text-sm placeholder-app-muted/60 focus:outline-none focus:border-app-accent transition-all duration-150"
+    />
   </div>
 
   @if (error) {
-    <div class="error-msg">{{ error }}</div>
+    <div class="text-app-red text-xs font-semibold mb-3 ml-1 animate-[fadeIn_0.2s_ease]">{{ error }}</div>
   }
 
-  <div class="btn-row">
-    <button class="btn-secondary" (click)="cancel()">Huỷ</button>
-    <button class="btn-primary" (click)="submit()">
+  <div class="flex gap-2.5 justify-end">
+    <button class="bg-app-surface border-[1.5px] border-app-border text-app-muted rounded-xl px-5 py-2.5 text-sm font-bold cursor-pointer hover:border-app-text hover:text-app-text transition-all duration-150 active:scale-95" (click)="cancel()">Huỷ</button>
+    <button class="bg-app-accent hover:bg-app-accent-light text-white border-none rounded-xl px-5 py-2.5 text-sm font-bold cursor-pointer transition-all duration-150 active:scale-95" (click)="submit()">
       {{ editLog ? "Lưu thay đổi" : "Thêm log" }}
     </button>
   </div>

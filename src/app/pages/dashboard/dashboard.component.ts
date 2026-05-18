@@ -13,7 +13,6 @@ import { ThemeService } from "../../core/services/theme.service";
   standalone: true,
   imports: [CommonModule, RouterModule, GoalCardComponent, GoalFormComponent],
   templateUrl: "./dashboard.component.html",
-  styleUrls: ["./dashboard.component.scss"],
 })
 export class DashboardComponent {
   private readonly goalService = inject(GoalService);

@@ -10,7 +10,6 @@ import { ValueType } from "../../shared/models/goal.model";
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: "./log-form.component.html",
-  styleUrls: ["./log-form.component.scss"],
 })
 export class LogFormComponent implements OnInit {
   @Input() goalId!: string;

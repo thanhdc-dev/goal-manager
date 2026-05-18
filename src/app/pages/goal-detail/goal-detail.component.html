@@ -1,142 +1,167 @@
-<div class="detail-page">
+<div class="min-h-screen bg-app-bg pb-12 transition-colors duration-250 animate-fade-in">
   <!-- Back nav -->
-  <nav class="back-nav">
-    <a routerLink="/" class="back-link">← Quay lại Dashboard</a>
+  <nav class="max-w-[1100px] mx-auto px-6 pt-5">
+    <a routerLink="/" class="text-xs font-bold text-app-muted hover:text-[var(--goal-color)] transition-colors">← Quay lại Dashboard</a>
   </nav>
 
   @if (goal()) {
-    <div class="detail-content" [style]="goalStyle()">
+    <div class="max-w-[1100px] mx-auto px-6 py-5 grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6 items-start" [style]="goalStyle()">
       <!-- Left column -->
-      <aside class="sidebar">
+      <aside class="flex flex-col gap-4">
         <!-- Chart & progress -->
-        <div class="card chart-card">
+        <div class="bg-app-card border-[1.5px] border-app-border rounded-2xl p-5 shadow-sm transition-colors duration-250 text-center flex flex-col items-center">
           <app-progress-chart [progress]="stats()?.progress ?? 0" />
 
-          <div class="status-row">
-            <span class="status-badge" [class]="'status-' + stats()?.status">
+          <div class="flex items-center justify-center gap-2.5 my-3 flex-wrap">
+            <span 
+              class="text-[0.78rem] font-extrabold px-3.5 py-1 rounded-full border-[1.5px]"
+              [ngClass]="{
+                'bg-app-green-soft text-app-green border-app-green': stats()?.status === 'ahead' || stats()?.status === 'completed',
+                'bg-app-yellow-soft text-app-yellow border-app-yellow': stats()?.status === 'on-track',
+                'bg-app-red-soft text-app-red border-app-red': stats()?.status === 'behind',
+                'bg-app-surface text-app-muted border-app-border': stats()?.status === 'expired'
+              }"
+            >
               {{ statusEmoji() }} {{ statusLabel() }}
             </span>
             @if ((stats()?.streak ?? 0) > 0) {
-              <span class="streak">
+              <span class="text-[0.82rem] font-bold text-app-orange">
                 🔥 {{ stats()!.streak }} {{ periodLabel() }} liên tiếp
               </span>
             }
           </div>
 
           <!-- Insight message -->
-          <div class="insight-box" [class]="'status-' + stats()?.status">
-            <p class="insight-text">{{ predictionMsg() }}</p>
+          <div 
+            class="my-3 p-3 px-4 rounded-xl bg-app-surface border-l-[3px] text-left w-full"
+            [ngClass]="{
+              'border-l-app-green': stats()?.status === 'ahead' || stats()?.status === 'completed',
+              'border-l-app-red': stats()?.status === 'behind',
+              'border-l-[var(--goal-color)]': stats()?.status !== 'ahead' && stats()?.status !== 'completed' && stats()?.status !== 'behind'
+            }"
+          >
+            <p class="text-[0.87rem] text-app-text leading-relaxed font-semibold">{{ predictionMsg() }}</p>
           </div>
 
           <!-- Core stat: required per period -->
           @if (!stats()?.isCompleted && !stats()?.isExpired) {
-            <div class="required-card">
-              <span class="req-label">{{ periodLabel() }} tiếp theo cần</span>
-              <span class="req-value">{{ fmt(stats()?.requiredPerPeriod ?? 0) }}</span>
-              <span class="req-unit">{{ goal()!.unit }}</span>
+            <div class="bg-[var(--goal-color-soft)] rounded-xl p-4 mt-3 text-center w-full">
+              <span class="block text-[0.72rem] font-bold uppercase tracking-wider text-[var(--goal-color)] mb-1">{{ periodLabel() }} tiếp theo cần</span>
+              <span class="inline text-3xl font-extrabold text-[var(--goal-color)] leading-none">{{ fmt(stats()?.requiredPerPeriod ?? 0) }}</span>
+              <span class="text-sm font-bold text-[var(--goal-color)] ml-1">{{ goal()!.unit }}</span>
             </div>
           }
         </div>
 
         <!-- Stats breakdown -->
-        <div class="card stats-card">
-          <h3 class="section-title">Thống kê</h3>
-          <div class="stat-list">
-            <div class="stat-row">
+        <div class="bg-app-card border-[1.5px] border-app-border rounded-2xl p-5 shadow-sm transition-colors duration-250">
+          <h3 class="text-[0.78rem] font-bold uppercase tracking-wider text-app-muted mb-3">Thống kê</h3>
+          <div class="flex flex-col gap-2">
+            <div class="flex justify-between text-[0.88rem] text-app-muted">
               <span>Đã tích lũy</span>
-              <strong>{{ fmt(stats()?.currentValue ?? 0) }} {{ goal()!.unit }}</strong>
+              <strong class="text-app-text font-bold">{{ fmt(stats()?.currentValue ?? 0) }} {{ goal()!.unit }}</strong>
             </div>
-            <div class="stat-row">
+            <div class="flex justify-between text-[0.88rem] text-app-muted">
               <span>Mục tiêu</span>
-              <strong>{{ fmt(goal()!.targetValue) }} {{ goal()!.unit }}</strong>
+              <strong class="text-app-text font-bold">{{ fmt(goal()!.targetValue) }} {{ goal()!.unit }}</strong>
             </div>
-            <div class="stat-row">
+            <div class="flex justify-between text-[0.88rem] text-app-muted">
               <span>Còn lại</span>
-              <strong>{{ fmt(stats()?.remaining ?? 0) }} {{ goal()!.unit }}</strong>
+              <strong class="text-app-text font-bold">{{ fmt(stats()?.remaining ?? 0) }} {{ goal()!.unit }}</strong>
             </div>
-            <div class="stat-row">
+            <div class="flex justify-between text-[0.88rem] text-app-muted">
               <span>{{ periodLabel() | titlecase }} còn lại</span>
-              <strong>{{ stats()?.remainingPeriods ?? 0 }}/{{ stats()?.totalPeriods ?? 0 }}</strong>
+              <strong class="text-app-text font-bold">{{ stats()?.remainingPeriods ?? 0 }}/{{ stats()?.totalPeriods ?? 0 }}</strong>
             </div>
-            <div class="stat-row">
+            <div class="flex justify-between text-[0.88rem] text-app-muted">
               <span>Tiến độ kỳ vọng</span>
-              <strong>{{ stats()?.expectedProgress | number: "1.0-1" }}%</strong>
+              <strong class="text-app-text font-bold">{{ stats()?.expectedProgress | number: "1.0-1" }}%</strong>
             </div>
-            <div class="stat-row">
+            <div class="flex justify-between text-[0.88rem] text-app-muted">
               <span>Giá trị kỳ vọng</span>
-              <strong>{{ fmt(stats()?.expectedValue ?? 0) }} {{ goal()!.unit }}</strong>
+              <strong class="text-app-text font-bold">{{ fmt(stats()?.expectedValue ?? 0) }} {{ goal()!.unit }}</strong>
             </div>
-            <div class="stat-row">
+            <div class="flex justify-between text-[0.88rem] text-app-muted">
               <span>Dự đoán cuối kỳ</span>
-              <strong>{{ fmt(stats()?.predictedTotal ?? 0) }} {{ goal()!.unit }}</strong>
+              <strong class="text-app-text font-bold">{{ fmt(stats()?.predictedTotal ?? 0) }} {{ goal()!.unit }}</strong>
             </div>
           </div>
 
           <!-- Milestones -->
-          <h4 class="section-title" style="margin-top: 16px">Milestones</h4>
-          <div class="milestones">
+          <h4 class="text-[0.78rem] font-bold uppercase tracking-wider text-app-muted mb-3 mt-5">Milestones</h4>
+          <div class="flex gap-2 mb-3.5">
             @for (m of stats()?.milestones; track $index) {
-              <div class="ms" [class.reached]="m.reached">
-                <span class="ms-pct">{{ m.percent }}%</span>
-                <span class="ms-icon">{{ m.reached ? "✅" : "○" }}</span>
-                @if (m.reachedAt) { <span class="ms-date">{{ formatDate(m.reachedAt) }}</span> }
+              <div 
+                class="flex-1 text-center py-2 px-1 rounded-xl border-[1.5px] transition-all duration-200"
+                [ngClass]="{
+                  'bg-[var(--goal-color-soft)] border-[var(--goal-color)]': m.reached,
+                  'bg-app-surface border-app-border': !m.reached
+                }"
+              >
+                <span class="block text-[0.72rem] font-bold" [ngClass]="m.reached ? 'text-[var(--goal-color)]' : 'text-app-muted'">{{ m.percent }}%</span>
+                <span class="block text-base my-0.5">{{ m.reached ? "✅" : "○" }}</span>
+                @if (m.reachedAt) { 
+                  <span class="block text-[0.6rem] text-app-muted font-semibold">{{ formatDate(m.reachedAt) }}</span> 
+                }
               </div>
             }
           </div>
 
           <!-- Goal info -->
-          <div class="goal-dates">
-            <span>📅 {{ formatDate(goal()!.startDate) }} → {{ formatDate(goal()!.endDate) }}</span>
-            <span class="type-chip">{{ goal()!.accumulationType === "daily" ? "Hàng ngày" : "Hàng tháng" }}</span>
+          <div class="flex items-center justify-between text-[0.75rem] text-app-muted flex-wrap gap-1.5 pt-3 border-t border-app-border mt-4">
+            <span class="font-medium">📅 {{ formatDate(goal()!.startDate) }} → {{ formatDate(goal()!.endDate) }}</span>
+            <span class="bg-app-surface border border-app-border rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold">{{ goal()!.accumulationType === "daily" ? "Hàng ngày" : "Hàng tháng" }}</span>
           </div>
         </div>
       </aside>
 
       <!-- Right column: logs -->
-      <main class="log-section">
-        <div class="log-header">
-          <h2 class="goal-title">{{ goal()!.name }}</h2>
-          <div class="log-header-actions">
-            <button class="btn-edit-goal" (click)="openEditGoal()">✏️ Sửa mục tiêu</button>
-            <button class="btn-add" (click)="openAddLog()">+ Thêm log</button>
+      <main class="flex flex-col gap-4">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <h2 class="text-2xl font-extrabold text-app-text tracking-tight m-0">{{ goal()!.name }}</h2>
+          <div class="flex gap-2 items-center">
+            <button class="bg-transparent border-[1.5px] border-app-border rounded-xl px-3.5 py-2 text-[0.85rem] font-bold text-app-muted cursor-pointer hover:border-[var(--goal-color)] hover:text-[var(--goal-color)] transition-all duration-150 active:scale-95" (click)="openEditGoal()">✏️ Sửa mục tiêu</button>
+            <button class="bg-[var(--goal-color)] hover:brightness-110 text-white border-none rounded-xl px-4 py-2.5 text-[0.88rem] font-bold cursor-pointer transition-all duration-150 active:scale-95" (click)="openAddLog()">+ Thêm log</button>
           </div>
         </div>
 
         @if (goal()!.description) {
-          <p class="goal-desc">{{ goal()!.description }}</p>
+          <p class="text-[0.9rem] text-app-muted leading-relaxed m-0 mb-2 font-medium">{{ goal()!.description }}</p>
         }
 
         <!-- Log form inline -->
-        <app-log-form
-          *ngIf="showLogForm()"
-          [goalId]="goal()!.id"
-          [unit]="goal()!.unit"
-          [valueType]="goal()!.valueType"
-          [editLog]="editingLog() ?? undefined"
-          (saved)="onLogSaved()"
-          (cancelled)="closeLogForm()"
-          style="display: block; margin-bottom: 20px"
-        />
+        @if (showLogForm()) {
+          <div class="block mb-2">
+            <app-log-form
+              [goalId]="goal()!.id"
+              [unit]="goal()!.unit"
+              [valueType]="goal()!.valueType"
+              [editLog]="editingLog() ?? undefined"
+              (saved)="onLogSaved()"
+              (cancelled)="closeLogForm()"
+            />
+          </div>
+        }
 
         <!-- Log history -->
         @if (logs().length > 0) {
-          <div class="log-list">
+          <div class="flex flex-col gap-2">
             @for (log of logs(); track log.id) {
-              <div class="log-item">
-                <div class="log-left">
-                  <span class="log-date">{{ formatDate(log.date) }}</span>
-                  @if (log.note) { <span class="log-note">{{ log.note }}</span> }
+              <div class="bg-app-card border-[1.5px] border-app-border rounded-xl p-3 px-4 flex items-center justify-between gap-3 transition-colors duration-150 hover:border-[var(--goal-color)]">
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-[0.85rem] font-bold text-app-text">{{ formatDate(log.date) }}</span>
+                  @if (log.note) { <span class="text-[0.78rem] text-app-muted font-medium">{{ log.note }}</span> }
                 </div>
-                <div class="log-right">
+                <div class="flex items-center gap-2.5">
                   @if (log.syncStatus === 'pending') {
-                    <span class="sync-pending-log" title="Chờ đồng bộ">☁️</span>
+                    <span class="text-xs animate-pulse-sync" title="Chờ đồng bộ">☁️</span>
                   }
-                  <span class="log-value"
-                    >+{{ fmt(log.value) }} <span class="log-unit">{{ goal()!.unit }}</span></span
-                  >
-                  <div class="log-actions">
-                    <button class="btn-icon" (click)="openEditLog(log)" title="Sửa">✏️</button>
-                    <button class="btn-icon btn-del" (click)="deleteLog(log)" title="Xóa">🗑️</button>
+                  <span class="text-[1.05rem] font-extrabold text-app-green whitespace-nowrap">
+                    +{{ fmt(log.value) }} <span class="text-[0.8rem] font-semibold text-app-muted">{{ goal()!.unit }}</span>
+                  </span>
+                  <div class="flex gap-1 border-l border-app-border pl-2.5 ml-1">
+                    <button class="bg-transparent border-none cursor-pointer p-1.5 px-2 rounded-lg text-sm text-app-muted hover:bg-app-surface transition-colors" (click)="openEditLog(log)" title="Sửa">✏️</button>
+                    <button class="bg-transparent border-none cursor-pointer p-1.5 px-2 rounded-lg text-sm text-app-muted hover:bg-app-surface hover:text-app-red transition-colors" (click)="deleteLog(log)" title="Xóa">🗑️</button>
                   </div>
                 </div>
               </div>
@@ -145,9 +170,9 @@
         }
 
         @if (logs().length === 0 && !showLogForm()) {
-          <div class="no-logs">
-            <p>Chưa có log nào. Bắt đầu ghi nhận tiến độ!</p>
-            <button class="btn-add" (click)="openAddLog()">+ Thêm log đầu tiên</button>
+          <div class="text-center py-12 px-6 bg-app-card border border-app-border rounded-2xl">
+            <p class="text-sm text-app-muted mb-4 font-semibold">Chưa có log nào. Bắt đầu ghi nhận tiến độ!</p>
+            <button class="bg-[var(--goal-color)] hover:brightness-110 text-white border-none rounded-xl px-4 py-2.5 text-[0.88rem] font-bold cursor-pointer transition-all duration-150 active:scale-95" (click)="openAddLog()">+ Thêm log đầu tiên</button>
           </div>
         }
       </main>
@@ -155,13 +180,13 @@
 
     <!-- Edit goal modal -->
     @if (showEditGoalForm()) {
-      <div class="edit-goal-overlay" (click)="closeEditGoal()" onkeypress="">
-        <div class="edit-goal-modal" (click)="$event.stopPropagation()" onkeypress="">
-          <div class="edit-goal-header">
-            <h2>Chỉnh sửa mục tiêu</h2>
-            <button class="btn-close" (click)="closeEditGoal()">✕</button>
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-50 p-4 animate-fade-in" (click)="closeEditGoal()" onkeypress="">
+        <div class="bg-app-card border-[1.5px] border-app-border rounded-3xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto animate-slide-up transition-colors duration-250 shadow-2xl" (click)="$event.stopPropagation()" onkeypress="">
+          <div class="flex justify-between items-center p-6 pb-0">
+            <h2 class="text-lg font-bold text-app-text">Chỉnh sửa mục tiêu</h2>
+            <button class="bg-transparent border-none text-lg text-app-muted hover:bg-app-surface hover:text-app-text p-1.5 px-3 rounded-lg cursor-pointer transition-colors" (click)="closeEditGoal()">✕</button>
           </div>
-          <div class="edit-goal-body">
+          <div class="p-6">
             <app-goal-form
               [initialGoal]="goal()!"
               (saved)="onGoalSaved()"
@@ -172,9 +197,9 @@
       </div>
     }
   } @else {
-    <div class="not-found">
-      <p>Không tìm thấy mục tiêu.</p>
-      <a routerLink="/">← Quay lại</a>
+    <div class="text-center py-20 px-6 text-app-muted">
+      <p class="mb-4 text-base font-semibold">Không tìm thấy mục tiêu.</p>
+      <a routerLink="/" class="text-app-accent hover:underline font-bold">← Quay lại</a>
     </div>
   }
 </div>

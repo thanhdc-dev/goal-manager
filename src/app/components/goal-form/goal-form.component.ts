@@ -10,7 +10,6 @@ import { GoalService } from '../../core/services/goal.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './goal-form.component.html',
-  styleUrls: ['./goal-form.component.scss'],
 })
 export class GoalFormComponent implements OnInit {
   /** Truyền vào khi edit, để trống khi tạo mới */

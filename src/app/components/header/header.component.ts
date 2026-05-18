@@ -5,15 +5,16 @@ import { SyncService } from "../../core/services/sync.service";
 import { RouterLink } from "@angular/router";
 
 @Component({
-  selector: "app-header",
+  selector: 'app-header',
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <header class="header">
-      <div class="header-content">
-        <a routerLink="/" class="brand">
-          <div class="logo">
+    <header class="sticky top-0 z-50 px-6 py-3 bg-white/80 dark:bg-app-bg/80 backdrop-blur-md border-b border-black/5 dark:border-white/5 transition-colors duration-250">
+      <div class="max-w-[1200px] mx-auto flex justify-between items-center">
+        <a routerLink="/" class="flex items-center gap-3 no-underline text-app-text">
+          <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 text-white rounded-lg flex items-center justify-center">
             <svg
+              class="w-[18px] h-[18px]"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -24,35 +25,36 @@ import { RouterLink } from "@angular/router";
               />
             </svg>
           </div>
-          <span class="app-name">Goal Tracker</span>
+          <span class="font-extrabold text-[1.1rem] tracking-tight">Goal Tracker</span>
         </a>
 
-        <div class="actions">
+        <div class="actions flex items-center gap-6">
           @if (!sync.isOnline()) {
-            <div class="sync-status offline">
-              <span class="dot"></span>
-              <span class="status-text">Đang ngoại tuyến</span>
+            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-app-muted px-3 py-1.5 bg-slate-100 dark:bg-app-surface rounded-full">
+              <span class="w-1.5 h-1.5 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,1)]"></span>
+              <span class="max-sm:hidden">Đang ngoại tuyến</span>
             </div>
           } @else if (sync.isSyncing()) {
-            <div class="sync-status syncing">
-              <span class="spinner"></span>
-              <span class="status-text">Đang đồng bộ...</span>
+            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-app-muted px-3 py-1.5 bg-slate-100 dark:bg-app-surface rounded-full">
+              <span class="w-3 h-3 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin"></span>
+              <span class="max-sm:hidden">Đang đồng bộ...</span>
             </div>
           } @else {
-            <div class="sync-status synced">
-              <span class="dot"></span>
-              <span class="status-text">Đã sao lưu</span>
+            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-app-muted px-3 py-1.5 bg-slate-100 dark:bg-app-surface rounded-full">
+              <span class="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)]"></span>
+              <span class="max-sm:hidden">Đã sao lưu</span>
             </div>
           }
 
-          <div class="user-menu">
-            <span class="user-email">{{ auth.user()?.email }}</span>
+          <div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-app-border">
+            <span class="text-[0.85rem] text-slate-600 dark:text-app-muted font-medium max-sm:hidden">{{ auth.user()?.email }}</span>
             <button
               (click)="auth.signOut()"
-              class="btn-logout"
+              class="bg-transparent border-none text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500 p-1.5 rounded-lg transition-all duration-200 flex cursor-pointer"
               title="Đăng xuất"
             >
               <svg
+                class="w-[18px] h-[18px]"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -67,149 +69,7 @@ import { RouterLink } from "@angular/router";
         </div>
       </div>
     </header>
-  `,
-  styles: [
-    `
-      .header {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        padding: 0.75rem 1.5rem;
-      }
-
-      .header-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        text-decoration: none;
-        color: var(--text-main, #1e293b);
-
-        .logo {
-          width: 32px;
-          height: 32px;
-          background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-          color: white;
-          border-radius: 0.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          svg {
-            width: 18px;
-            height: 18px;
-          }
-        }
-
-        .app-name {
-          font-weight: 800;
-          font-size: 1.1rem;
-          letter-spacing: -0.02em;
-        }
-      }
-
-      .actions {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-      }
-
-      .sync-status {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.75rem;
-        color: #64748b;
-        padding: 0.4rem 0.75rem;
-        background: #f1f5f9;
-        border-radius: 2rem;
-
-        &.synced .dot {
-          width: 6px;
-          height: 6px;
-          background: #22c55e;
-          border-radius: 50%;
-          box-shadow: 0 0 8px #22c55e;
-        }
-
-        &.offline .dot {
-          width: 6px;
-          height: 6px;
-          background: #ef4444;
-          border-radius: 50%;
-          box-shadow: 0 0 8px #ef4444;
-        }
-      }
-
-      .user-menu {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding-left: 1rem;
-        border-left: 1px solid #e2e8f0;
-
-        .user-email {
-          font-size: 0.85rem;
-          color: #475569;
-          font-weight: 500;
-        }
-      }
-
-      .btn-logout {
-        background: none;
-        border: none;
-        color: #94a3b8;
-        cursor: pointer;
-        padding: 0.4rem;
-        border-radius: 0.5rem;
-        transition: all 0.2s;
-        display: flex;
-
-        &:hover {
-          background: #fee2e2;
-          color: #ef4444;
-        }
-
-        svg {
-          width: 18px;
-          height: 18px;
-        }
-      }
-
-      .spinner {
-        width: 12px;
-        height: 12px;
-        border: 2px solid #e2e8f0;
-        border-top-color: #6366f1;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      @media (max-width: 640px) {
-        .user-email {
-          display: none;
-        }
-        .status-text {
-          display: none;
-        }
-      }
-    `,
-  ],
+  `
 })
 export class HeaderComponent {
   auth = inject(AuthService);
