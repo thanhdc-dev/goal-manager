@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development"
+    "ng": "node ./node_modules/@angular/cli/bin/ng.js",
+    "start": "node ./node_modules/@angular/cli/bin/ng.js serve",
+    "build": "node ./node_modules/@angular/cli/bin/ng.js build",
+    "build:prod": "node ./node_modules/@angular/cli/bin/ng.js build --configuration production",
+    "watch": "node ./node_modules/@angular/cli/bin/ng.js build --watch --configuration development"
   },
   "dependencies": {
     "@angular/animations": "^21.2.9",
@@ -18,6 +19,7 @@
     "@angular/platform-browser-dynamic": "^21.2.9",
     "@angular/router": "^21.2.9",
     "@angular/service-worker": "^21.2.12",
+    "@supabase/supabase-js": "^2.105.4",
     "chart.js": "^4.4.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.6.0",

@@ -128,6 +128,9 @@
                   @if (log.note) { <span class="log-note">{{ log.note }}</span> }
                 </div>
                 <div class="log-right">
+                  @if (log.syncStatus === 'pending') {
+                    <span class="sync-pending-log" title="Chờ đồng bộ">☁️</span>
+                  }
                   <span class="log-value"
                     >+{{ fmt(log.value) }} <span class="log-unit">{{ goal()!.unit }}</span></span
                   >

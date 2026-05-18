@@ -11,4 +11,7 @@ export interface Log {
   date: string; // ISO string (YYYY-MM-DD)
   note?: string;
   createdAt: string; // ISO string
+  updatedAt: string; // ISO string
+  userId?: string;   // Supabase User ID
+  syncStatus?: 'synced' | 'pending' | 'error';
 }

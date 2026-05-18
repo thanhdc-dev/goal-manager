@@ -7,7 +7,12 @@
         <button class="btn-delete" (click)="onDelete($event)" title="Xóa mục tiêu">✕</button>
       </div>
     </div>
-    <span class="status-badge">{{ statusEmoji() }} {{ statusLabel() }}</span>
+    <span class="status-badge">
+      {{ statusEmoji() }} {{ statusLabel() }}
+      @if (goal().syncStatus === 'pending') {
+        <span class="sync-pending" title="Chờ đồng bộ">☁️</span>
+      }
+    </span>
   </div>
 
   <!-- Progress bar -->

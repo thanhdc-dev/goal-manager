@@ -24,6 +24,9 @@ export interface Goal {
   description?: string;
   color?: string;    // Màu chủ đạo của mục tiêu (hex), VD: '#4ade80'
   createdAt: string; // ISO string
+  updatedAt: string; // ISO string
+  userId?: string;   // Supabase User ID
+  syncStatus?: 'synced' | 'pending' | 'error';
 }
 
 /** Trạng thái mốc cột (Milestone) */

@@ -364,6 +364,16 @@
   display: flex;
   align-items: center;
   gap: 10px;
+
+  .sync-pending-log {
+    font-size: 0.9rem;
+    animation: pulse-sync 2s infinite ease-in-out;
+  }
+}
+
+@keyframes pulse-sync {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 
 .log-value {

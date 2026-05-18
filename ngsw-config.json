@@ -32,5 +32,18 @@
       }
     }
   ],
-  "dataGroups": []
+  "dataGroups": [
+    {
+      "name": "supabase-api",
+      "urls": [
+        "https://aevihovgkzekawrkpkbr.supabase.co/rest/v1/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1h",
+        "timeout": "10s",
+        "strategy": "freshness"
+      }
+    }
+  ]
 }
