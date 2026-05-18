@@ -106,5 +106,9 @@ export class GoalCardComponent {
   fmt(n: number): string {
     return this.calcService.formatNumber(n);
   }
+
+  fmtCompact(n: number): string {
+    return this.calcService.formatCompact(n);
+  }
 }
 

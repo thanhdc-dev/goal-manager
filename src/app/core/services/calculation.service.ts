@@ -250,4 +250,29 @@ export class CalculationService {
       maximumFractionDigits: hasDecimal ? 1 : 0,
     });
   }
+
+  formatCompact(n: number): string {
+    if (n === 0) return "0";
+    const absN = Math.abs(n);
+
+    // Định dạng rút gọn tiếng Việt (tỷ, tr, k)
+    if (absN >= 1e9) {
+      return this.trimDecimal(n / 1e9, 2) + " tỷ";
+    }
+    if (absN >= 1e6) {
+      return this.trimDecimal(n / 1e6, 2) + " tr";
+    }
+    if (absN >= 1e3) {
+      return this.trimDecimal(n / 1e3, 1) + " k";
+    }
+
+    return this.formatNumber(n);
+  }
+
+  private trimDecimal(val: number, maxDigits: number): string {
+    return val.toLocaleString("vi-VN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: maxDigits,
+    });
+  }
 }

@@ -59,20 +59,31 @@
   </div>
 
   <!-- Key stats -->
-  <div class="grid grid-cols-4 gap-2 mb-3.5">
-    <div class="text-center py-2 px-1 rounded-xl bg-app-surface transition-colors duration-250">
-      <span class="block text-sm font-extrabold text-app-text tabular-nums">{{ fmt(stats().currentValue) }}</span>
+  <div class="grid grid-cols-2 gap-2.5 mb-3.5">
+    <div 
+      class="text-center py-2.5 px-2 rounded-xl bg-app-surface transition-colors duration-200 hover:bg-app-surface/80 cursor-help"
+      [title]="fmt(stats().currentValue) + ' ' + goal().unit"
+    >
+      <span class="block text-sm font-extrabold text-app-text tabular-nums">{{ fmtCompact(stats().currentValue) }}</span>
       <span class="block text-[0.63rem] text-app-muted mt-0.5 uppercase tracking-wider">Đã tích lũy</span>
     </div>
-    <div class="text-center py-2 px-1 rounded-xl bg-app-surface transition-colors duration-250">
-      <span class="block text-sm font-extrabold text-app-text tabular-nums">{{ fmt(stats().remaining) }}</span>
+    <div 
+      class="text-center py-2.5 px-2 rounded-xl bg-app-surface transition-colors duration-200 hover:bg-app-surface/80 cursor-help"
+      [title]="fmt(stats().remaining) + ' ' + goal().unit"
+    >
+      <span class="block text-sm font-extrabold text-app-text tabular-nums">{{ fmtCompact(stats().remaining) }}</span>
       <span class="block text-[0.63rem] text-app-muted mt-0.5 uppercase tracking-wider">Còn lại</span>
     </div>
-    <div class="text-center py-2 px-1 rounded-xl bg-[var(--goal-color-soft)] transition-colors duration-250">
-      <span class="block text-sm font-extrabold text-[var(--goal-color)] tabular-nums">{{ fmt(stats().requiredPerPeriod) }}</span>
+    <div 
+      class="text-center py-2.5 px-2 rounded-xl bg-[var(--goal-color-soft)] transition-colors duration-200 hover:brightness-95 cursor-help"
+      [title]="fmt(stats().requiredPerPeriod) + ' ' + goal().unit + '/' + periodLabel()"
+    >
+      <span class="block text-sm font-extrabold text-[var(--goal-color)] tabular-nums">{{ fmtCompact(stats().requiredPerPeriod) }}</span>
       <span class="block text-[0.63rem] text-app-muted mt-0.5 uppercase tracking-wider">Cần/{{ periodLabel() }}</span>
     </div>
-    <div class="text-center py-2 px-1 rounded-xl bg-app-surface transition-colors duration-250">
+    <div 
+      class="text-center py-2.5 px-2 rounded-xl bg-app-surface transition-colors duration-200 hover:bg-app-surface/80"
+    >
       <span class="block text-sm font-extrabold text-app-text tabular-nums">{{ stats().remainingPeriods }}</span>
       <span class="block text-[0.63rem] text-app-muted mt-0.5 uppercase tracking-wider">{{ periodLabel() | titlecase }} còn lại</span>
     </div>
@@ -81,7 +92,12 @@
   <!-- Unit & target -->
   <div class="flex items-center gap-2 flex-wrap mb-2.5">
     <span class="bg-app-surface border border-app-border rounded-full px-2.5 py-0.5 text-[0.72rem] font-semibold text-app-muted">{{ goal().unit }}</span>
-    <span class="text-[0.75rem] text-app-muted flex-1 font-medium">Mục tiêu: {{ fmt(goal().targetValue) }}</span>
+    <span 
+      class="text-[0.75rem] text-app-muted flex-1 font-semibold hover:text-app-text transition-colors cursor-help"
+      [title]="fmt(goal().targetValue) + ' ' + goal().unit"
+    >
+      Mục tiêu: {{ fmtCompact(goal().targetValue) }}
+    </span>
 
     @if (stats().streak > 0) {
       <span class="text-xs font-semibold text-app-orange">🔥 {{ stats().streak }} {{ periodLabel() }}</span>
