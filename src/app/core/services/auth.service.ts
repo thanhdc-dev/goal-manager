@@ -25,7 +25,10 @@ export class AuthService {
       (_event: string, session: Session | null) => {
         this._session.set(session);
 
-        if (_event === "SIGNED_OUT") {
+        if (_event === "SIGNED_IN") {
+          // Tự động chuyển hướng về trang chủ khi đăng nhập thành công
+          this.router.navigate(["/"]);
+        } else if (_event === "SIGNED_OUT") {
           localStorage.clear(); // Xóa sạch dữ liệu local khi logout để bảo mật
           this.router.navigate(["/login"]);
         }
@@ -38,6 +41,11 @@ export class AuthService {
       data: { session },
     } = await this.supabase.auth.getSession();
     this._session.set(session);
+
+    // Nếu app khởi tạo mà đã có session hợp lệ, chuyển thẳng vào dashboard
+    if (session) {
+      this.router.navigate(["/"]);
+    }
   }
 
   async signInWithEmail(email: string) {
@@ -45,6 +53,19 @@ export class AuthService {
       email,
       options: {
         emailRedirectTo: window.location.origin + "/login",
+      },
+    });
+  }
+
+  async signInWithGoogle() {
+    return await this.supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/login",
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
     });
   }

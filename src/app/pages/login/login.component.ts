@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   email = signal('');
   loading = signal(false);
+  googleLoading = signal(false);
   message = signal('');
   error = signal('');
 
@@ -41,5 +42,19 @@ export class LoginComponent {
     } else {
       this.message.set('Kiểm tra email của bạn để nhận liên kết đăng nhập!');
     }
+  }
+
+  async loginWithGoogle() {
+    this.googleLoading.set(true);
+    this.error.set('');
+    this.message.set('');
+
+    const { error } = await this.auth.signInWithGoogle();
+    
+    if (error) {
+      this.error.set(error.message);
+      this.googleLoading.set(false);
+    }
+    // Nếu thành công, trang sẽ tự chuyển hướng sang Google OAuth Consent Screen
   }
 }
