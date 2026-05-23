@@ -1,20 +1,27 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { GoalService } from '../../core/services/goal.service';
-import { LogService } from '../../core/services/log.service';
-import { CalculationService } from '../../core/services/calculation.service';
-import { Log } from '../../shared/models/log.model';
-import { ProgressChartComponent } from '../../components/progress-chart/progress-chart.component';
-import { LogFormComponent } from '../../components/log-form/log-form.component';
-import { GoalFormComponent } from '../../components/goal-form/goal-form.component';
+import { Component, OnInit, computed, inject, signal } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { ActivatedRoute, RouterModule } from "@angular/router";
+import { GoalService } from "../../core/services/goal.service";
+import { LogService } from "../../core/services/log.service";
+import { CalculationService } from "../../core/services/calculation.service";
+import { Log } from "../../shared/models/log.model";
+import { ProgressChartComponent } from "../../components/progress-chart/progress-chart.component";
+import { LogFormComponent } from "../../components/log-form/log-form.component";
+import { GoalFormComponent } from "../../components/goal-form/goal-form.component";
 
 @Component({
-  selector: 'app-goal-detail',
+  selector: "app-goal-detail",
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ProgressChartComponent, LogFormComponent, GoalFormComponent],
-  templateUrl: './goal-detail.component.html',
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ProgressChartComponent,
+    LogFormComponent,
+    GoalFormComponent,
+  ],
+  templateUrl: "./goal-detail.component.html",
 })
 export class GoalDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -30,7 +37,7 @@ export class GoalDetailComponent implements OnInit {
   /** Goal object — tự cập nhật nếu goalService.goals thay đổi */
   readonly goal = computed(() => {
     const id = this._goalId();
-    return id ? this.goalService.getById(id) ?? null : null;
+    return id ? (this.goalService.getById(id) ?? null) : null;
   });
 
   /** Logs của goal này — tự cập nhật khi logService._logs thay đổi */
@@ -49,29 +56,25 @@ export class GoalDetailComponent implements OnInit {
   readonly predictionMsg = computed(() => {
     const goal = this.goal();
     const stats = this.stats();
-    return goal && stats ? this.calcService.getPredictionMessage(goal, stats) : '';
-  });
-
-  readonly statusEmoji = computed(() => {
-    const s = this.stats()?.status;
-    const map: Record<string, string> = {
-      ahead: '🟢', 'on-track': '🟡', behind: '🔴',
-      completed: '✅', expired: '⌛'
-    };
-    return s ? (map[s] ?? '') : '';
+    return goal && stats
+      ? this.calcService.getPredictionMessage(goal, stats)
+      : "";
   });
 
   readonly statusLabel = computed(() => {
     const s = this.stats()?.status;
     const map: Record<string, string> = {
-      ahead: 'Vượt kế hoạch', 'on-track': 'Đúng kế hoạch',
-      behind: 'Chậm tiến độ', completed: 'Hoàn thành', expired: 'Hết hạn'
+      ahead: "Vượt kế hoạch",
+      "on-track": "Đúng kế hoạch",
+      behind: "Chậm tiến độ",
+      completed: "Hoàn thành",
+      expired: "Hết hạn",
     };
-    return s ? (map[s] ?? '') : '';
+    return s ? (map[s] ?? "") : "";
   });
 
   readonly periodLabel = computed(() =>
-    this.goal()?.accumulationType === 'daily' ? 'ngày' : 'tháng'
+    this.goal()?.accumulationType === "daily" ? "ngày" : "tháng",
   );
 
   /**
@@ -81,9 +84,9 @@ export class GoalDetailComponent implements OnInit {
     const color = this.goal()?.color;
     if (!color) return {};
     return {
-      '--goal-color': color,
-      '--goal-color-soft': this.hexToRgba(color, 0.14),
-      '--goal-color-light': this.lighten(color),
+      "--goal-color": color,
+      "--goal-color-soft": this.hexToRgba(color, 0.14),
+      "--goal-color-light": this.lighten(color),
     };
   });
 
@@ -98,7 +101,7 @@ export class GoalDetailComponent implements OnInit {
     const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 40);
     const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 40);
     const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 40);
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }
 
   // --- UI state ---
@@ -107,7 +110,7 @@ export class GoalDetailComponent implements OnInit {
   readonly showEditGoalForm = signal(false);
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
+    const id = this.route.snapshot.paramMap.get("id");
     if (id) this._goalId.set(id);
   }
 
@@ -133,7 +136,7 @@ export class GoalDetailComponent implements OnInit {
   }
 
   deleteLog(log: Log): void {
-    if (confirm('Xóa log này?')) {
+    if (confirm("Xóa log này?")) {
       this.logService.delete(log.id);
       // stats tự tính lại vì logService._logs đã thay đổi
     }
@@ -158,11 +161,15 @@ export class GoalDetailComponent implements OnInit {
     return this.calcService.formatNumber(n);
   }
 
+  fmtCompact(n: number): string {
+    return this.calcService.formatCompact(n);
+  }
+
   formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('vi-VN', {
-      day: '2-digit', month: '2-digit', year: 'numeric'
+    return new Date(iso).toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   }
 }
-
-

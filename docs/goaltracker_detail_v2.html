@@ -1,0 +1,157 @@
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<div class="bg-[#0d0d10] rounded-2xl p-4 md:p-6 border border-white/8 font-sans">
+
+  <nav class="flex items-center justify-between mb-6">
+    <button class="flex items-center gap-1.5 text-white/40 text-xs bg-transparent border-0 cursor-pointer">
+      <i class="ti ti-arrow-left text-sm" aria-hidden="true"></i>
+      Quay lại
+    </button>
+    <div class="flex gap-2">
+      <button class="h-8 px-3 rounded-lg bg-white/5 border border-white/10 text-white/60 text-xs font-medium flex items-center gap-1.5 cursor-pointer">
+        <i class="ti ti-pencil text-sm" aria-hidden="true"></i>
+        <span class="hidden sm:inline">Sửa mục tiêu</span>
+      </button>
+      <button class="h-8 px-3 rounded-lg bg-violet-500 border-0 text-white text-xs font-medium flex items-center gap-1.5 cursor-pointer">
+        <i class="ti ti-plus text-sm" aria-hidden="true"></i>
+        Thêm log
+      </button>
+    </div>
+  </nav>
+
+  <div class="flex flex-col lg:flex-row gap-4">
+
+    <div class="flex flex-col gap-3 w-full lg:w-[220px] lg:shrink-0">
+
+      <div class="bg-white/4 border border-white/8 rounded-2xl p-4 flex flex-col items-center sm:flex-row sm:items-start sm:gap-5 lg:flex-col lg:items-center">
+        <svg width="110" height="110" viewBox="0 0 120 120" class="shrink-0 mb-3 sm:mb-0 lg:mb-3" role="img">
+          <title>Tiến độ 20.6%</title>
+          <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="9"/>
+          <circle cx="60" cy="60" r="48" fill="none"
+            stroke="#34d399" stroke-width="9"
+            stroke-linecap="round"
+            stroke-dasharray="301.6"
+            stroke-dashoffset="239.5"
+            transform="rotate(-90 60 60)"/>
+          <text x="60" y="55" text-anchor="middle" font-size="19" font-weight="500" fill="#fff" font-family="sans-serif">20.6%</text>
+          <text x="60" y="70" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.3)" font-family="sans-serif">HOÀN THÀNH</text>
+        </svg>
+        <div class="flex flex-col items-center sm:items-start lg:items-center w-full">
+          <p class="text-white text-sm font-medium text-center sm:text-left lg:text-center mb-1">Tiết kiệm 100tr</p>
+          <p class="text-white/30 text-[11px] text-center sm:text-left lg:text-center mb-3">28/12/2025 → 27/12/2026</p>
+          <div class="flex gap-1.5 flex-wrap justify-center sm:justify-start lg:justify-center">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-400/10 text-emerald-400 border border-emerald-400/20">
+              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+              Vượt kế hoạch
+            </span>
+            <span class="text-[11px] text-orange-400/80 bg-orange-400/8 border border-orange-400/15 rounded-full px-2 py-0.5">🔥 1 tháng</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-amber-400/8 border border-amber-400/15 rounded-2xl p-4">
+        <p class="text-amber-400/60 text-[10px] font-medium uppercase tracking-wider mb-1.5">Tháng tiếp theo cần</p>
+        <p class="text-amber-400 text-2xl font-medium">11.342.858</p>
+        <p class="text-amber-400/50 text-xs mt-0.5">VNĐ / tháng</p>
+      </div>
+
+      <div class="bg-white/4 border border-white/8 rounded-2xl p-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 mb-3">
+          <div class="bg-white/4 rounded-xl p-2.5">
+            <p class="text-white text-sm font-medium">20,6 tr</p>
+            <p class="text-white/30 text-[10px] mt-0.5">Đã tích lũy</p>
+          </div>
+          <div class="bg-white/4 rounded-xl p-2.5">
+            <p class="text-white text-sm font-medium">79,4 tr</p>
+            <p class="text-white/30 text-[10px] mt-0.5">Còn lại</p>
+          </div>
+          <div class="bg-white/4 rounded-xl p-2.5">
+            <p class="text-white text-sm font-medium">7/1</p>
+            <p class="text-white/30 text-[10px] mt-0.5">Tháng còn lại</p>
+          </div>
+          <div class="bg-white/4 rounded-xl p-2.5">
+            <p class="text-white text-sm font-medium">0%</p>
+            <p class="text-white/30 text-[10px] mt-0.5">Kỳ vọng</p>
+          </div>
+        </div>
+        <div class="border-t border-white/6 pt-3">
+          <p class="text-white/25 text-[10px] font-medium uppercase tracking-wider mb-2">Milestones</p>
+          <div class="flex gap-1.5">
+            <div class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">25%</div>
+            <div class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">50%</div>
+            <div class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">75%</div>
+            <div class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">100%</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flex flex-col gap-3 flex-1 min-w-0">
+
+      <div class="bg-orange-400/6 border border-orange-400/15 rounded-2xl p-4 flex gap-3">
+        <i class="ti ti-alert-triangle text-orange-400 text-base mt-0.5 shrink-0" aria-hidden="true"></i>
+        <p class="text-orange-400/75 text-xs leading-relaxed">
+          Với tốc độ hiện tại, bạn sẽ đạt <strong class="text-orange-400">0 VNĐ</strong> — không đủ để đạt mục tiêu. Cần thêm <strong class="text-orange-400">11.342.858 VNĐ/tháng</strong> để đi đúng lộ trình.
+        </p>
+      </div>
+
+      <div class="bg-white/4 border border-white/8 rounded-2xl p-4 flex-1">
+        <p class="text-white/35 text-[11px] font-medium uppercase tracking-wider mb-3">Lịch sử ghi nhận</p>
+        <div class="flex flex-col gap-2">
+
+          <div class="flex items-center justify-between bg-white/3 border border-white/7 rounded-xl px-3 py-3 gap-2">
+            <span class="text-white/35 text-xs shrink-0">15/05/2026</span>
+            <div class="flex items-baseline gap-1 flex-1 justify-end">
+              <span class="text-emerald-400 text-sm font-medium">+100.000</span>
+              <span class="text-white/25 text-[11px]">VNĐ</span>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <button class="w-6 h-6 rounded-md bg-white/4 border-0 flex items-center justify-center cursor-pointer text-white/30">
+                <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+              </button>
+              <button class="w-6 h-6 rounded-md bg-white/4 border-0 flex items-center justify-center cursor-pointer text-white/30">
+                <i class="ti ti-trash text-xs" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between bg-white/3 border border-white/7 rounded-xl px-3 py-3 gap-2">
+            <span class="text-white/35 text-xs shrink-0">15/05/2026</span>
+            <div class="flex items-baseline gap-1 flex-1 justify-end">
+              <span class="text-emerald-400 text-sm font-medium">+500.000</span>
+              <span class="text-white/25 text-[11px]">VNĐ</span>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <button class="w-6 h-6 rounded-md bg-white/4 border-0 flex items-center justify-center cursor-pointer text-white/30">
+                <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+              </button>
+              <button class="w-6 h-6 rounded-md bg-white/4 border-0 flex items-center justify-center cursor-pointer text-white/30">
+                <i class="ti ti-trash text-xs" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between bg-white/3 border border-white/7 rounded-xl px-3 py-3 gap-2">
+            <span class="text-white/35 text-xs shrink-0">08/05/2026</span>
+            <div class="flex items-baseline gap-1 flex-1 justify-end">
+              <span class="text-emerald-400 text-sm font-medium">+20.000.000</span>
+              <span class="text-white/25 text-[11px]">VNĐ</span>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <button class="w-6 h-6 rounded-md bg-white/4 border-0 flex items-center justify-center cursor-pointer text-white/30">
+                <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+              </button>
+              <button class="w-6 h-6 rounded-md bg-white/4 border-0 flex items-center justify-center cursor-pointer text-white/30">
+                <i class="ti ti-trash text-xs" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,205 +1,282 @@
 <div class="min-h-screen bg-app-bg pb-12 transition-colors duration-250 animate-fade-in">
-  <!-- Back nav -->
-  <nav class="max-w-[1100px] mx-auto px-6 pt-5">
-    <a routerLink="/" class="text-xs font-bold text-app-muted hover:text-[var(--goal-color)] transition-colors">← Quay lại Dashboard</a>
-  </nav>
-
   @if (goal()) {
-    <div class="max-w-[1100px] mx-auto px-6 py-5 grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6 items-start" [style]="goalStyle()">
-      <!-- Left column -->
-      <aside class="flex flex-col gap-4">
-        <!-- Chart & progress -->
-        <div class="bg-app-card border-[1.5px] border-app-border rounded-2xl p-5 shadow-sm transition-colors duration-250 text-center flex flex-col items-center">
-          <app-progress-chart [progress]="stats()?.progress ?? 0" />
+  <!-- Navigation & Header Section -->
+  <div class="max-w-[1100px] mx-auto px-6 pt-6" [style]="goalStyle()">
+    <nav class="flex items-center justify-between mb-6">
+      <a routerLink="/"
+        class="flex items-center gap-1.5 text-app-muted hover:text-app-text text-xs bg-transparent border-0 cursor-pointer transition-colors font-semibold">
+        <i class="ti ti-arrow-left text-sm" aria-hidden="true"></i>
+        Quay lại
+      </a>
+      <div class="flex gap-2">
+        <button (click)="openEditGoal()"
+          class="h-8 px-3 rounded-lg bg-app-surface border border-app-border/80 text-app-muted hover:text-app-text text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all duration-150 active:scale-95">
+          <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+          <span class="hidden sm:inline">Sửa mục tiêu</span>
+        </button>
+        <button (click)="openAddLog()"
+          class="h-8 px-3 rounded-lg bg-(--goal-color) border-0 text-white hover:brightness-110 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all duration-150 active:scale-95">
+          <i class="ti ti-plus text-xs" aria-hidden="true"></i>
+          Thêm log
+        </button>
+      </div>
+    </nav>
 
-          <div class="flex items-center justify-center gap-2.5 my-3 flex-wrap">
-            <span 
-              class="text-[0.78rem] font-extrabold px-3.5 py-1 rounded-full border-[1.5px]"
+    <!-- Title & Description Header -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-extrabold text-app-text tracking-tight m-0">{{ goal()!.name }}</h2>
+      @if (goal()!.description) {
+      <p class="text-[0.9rem] text-app-muted leading-relaxed m-0 mt-2 font-medium">{{ goal()!.description }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content Area: 2-Column Responsive Layout -->
+  <div class="max-w-[1100px] mx-auto px-6 pb-6 flex flex-col lg:flex-row gap-6 items-start" [style]="goalStyle()">
+
+    <!-- Left Column (Sidebar) -->
+    <aside class="flex flex-col gap-4 w-full lg:w-1/3 lg:shrink-0">
+
+      <!-- Card 1: Chart & Status -->
+      <div
+        class="bg-app-card border border-app-border/80 rounded-2xl p-4 flex flex-col items-center sm:flex-row sm:items-start sm:gap-5 lg:flex-col lg:items-center w-full">
+        <app-progress-chart [progress]="stats()?.progress ?? 0" class="shrink-0 mb-3 sm:mb-0 lg:mb-3" />
+        <div class="flex flex-col items-center sm:items-start lg:items-center w-full">
+          <p class="text-app-text text-sm font-semibold text-center sm:text-left lg:text-center mb-1">{{ goal()!.name }}
+          </p>
+          <p class="text-app-muted/80 text-[11px] text-center sm:text-left lg:text-center mb-3">
+            {{ formatDate(goal()!.startDate) }} → {{ formatDate(goal()!.endDate) }}
+          </p>
+          <div class="flex gap-1.5 flex-wrap justify-center sm:justify-start lg:justify-center">
+            <span
+              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-colors"
               [ngClass]="{
-                'bg-app-green-soft text-app-green border-app-green': stats()?.status === 'ahead' || stats()?.status === 'completed',
-                'bg-app-yellow-soft text-app-yellow border-app-yellow': stats()?.status === 'on-track',
-                'bg-app-red-soft text-app-red border-app-red': stats()?.status === 'behind',
-                'bg-app-surface text-app-muted border-app-border': stats()?.status === 'expired'
-              }"
-            >
-              {{ statusEmoji() }} {{ statusLabel() }}
+                  'bg-app-green-soft text-app-green border-app-green/20': stats()?.status === 'ahead' || stats()?.status === 'completed',
+                  'bg-app-yellow-soft text-app-yellow border-app-yellow/20': stats()?.status === 'on-track',
+                  'bg-app-red-soft text-app-red border-app-red/20': stats()?.status === 'behind',
+                  'bg-app-surface text-app-muted border-app-border': stats()?.status === 'expired'
+                }">
+              <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+              {{ statusLabel() }}
             </span>
             @if ((stats()?.streak ?? 0) > 0) {
-              <span class="text-[0.82rem] font-bold text-app-orange">
-                🔥 {{ stats()!.streak }} {{ periodLabel() }} liên tiếp
-              </span>
+            <span
+              class="text-[11px] text-app-orange bg-app-orange/8 border border-app-orange/15 rounded-full px-2 py-0.5 font-semibold">
+              🔥 {{ stats()!.streak }} {{ periodLabel() }} liên tiếp
+            </span>
             }
-          </div>
-
-          <!-- Insight message -->
-          <div 
-            class="my-3 p-3 px-4 rounded-xl bg-app-surface border-l-[3px] text-left w-full"
-            [ngClass]="{
-              'border-l-app-green': stats()?.status === 'ahead' || stats()?.status === 'completed',
-              'border-l-app-red': stats()?.status === 'behind',
-              'border-l-[var(--goal-color)]': stats()?.status !== 'ahead' && stats()?.status !== 'completed' && stats()?.status !== 'behind'
-            }"
-          >
-            <p class="text-[0.87rem] text-app-text leading-relaxed font-semibold">{{ predictionMsg() }}</p>
-          </div>
-
-          <!-- Core stat: required per period -->
-          @if (!stats()?.isCompleted && !stats()?.isExpired) {
-            <div class="bg-[var(--goal-color-soft)] rounded-xl p-4 mt-3 text-center w-full">
-              <span class="block text-[0.72rem] font-bold uppercase tracking-wider text-[var(--goal-color)] mb-1">{{ periodLabel() }} tiếp theo cần</span>
-              <span class="inline text-3xl font-extrabold text-[var(--goal-color)] leading-none">{{ fmt(stats()?.requiredPerPeriod ?? 0) }}</span>
-              <span class="text-sm font-bold text-[var(--goal-color)] ml-1">{{ goal()!.unit }}</span>
-            </div>
-          }
-        </div>
-
-        <!-- Stats breakdown -->
-        <div class="bg-app-card border-[1.5px] border-app-border rounded-2xl p-5 shadow-sm transition-colors duration-250">
-          <h3 class="text-[0.78rem] font-bold uppercase tracking-wider text-app-muted mb-3">Thống kê</h3>
-          <div class="flex flex-col gap-2">
-            <div class="flex justify-between text-[0.88rem] text-app-muted">
-              <span>Đã tích lũy</span>
-              <strong class="text-app-text font-bold">{{ fmt(stats()?.currentValue ?? 0) }} {{ goal()!.unit }}</strong>
-            </div>
-            <div class="flex justify-between text-[0.88rem] text-app-muted">
-              <span>Mục tiêu</span>
-              <strong class="text-app-text font-bold">{{ fmt(goal()!.targetValue) }} {{ goal()!.unit }}</strong>
-            </div>
-            <div class="flex justify-between text-[0.88rem] text-app-muted">
-              <span>Còn lại</span>
-              <strong class="text-app-text font-bold">{{ fmt(stats()?.remaining ?? 0) }} {{ goal()!.unit }}</strong>
-            </div>
-            <div class="flex justify-between text-[0.88rem] text-app-muted">
-              <span>{{ periodLabel() | titlecase }} còn lại</span>
-              <strong class="text-app-text font-bold">{{ stats()?.remainingPeriods ?? 0 }}/{{ stats()?.totalPeriods ?? 0 }}</strong>
-            </div>
-            <div class="flex justify-between text-[0.88rem] text-app-muted">
-              <span>Tiến độ kỳ vọng</span>
-              <strong class="text-app-text font-bold">{{ stats()?.expectedProgress | number: "1.0-1" }}%</strong>
-            </div>
-            <div class="flex justify-between text-[0.88rem] text-app-muted">
-              <span>Giá trị kỳ vọng</span>
-              <strong class="text-app-text font-bold">{{ fmt(stats()?.expectedValue ?? 0) }} {{ goal()!.unit }}</strong>
-            </div>
-            <div class="flex justify-between text-[0.88rem] text-app-muted">
-              <span>Dự đoán cuối kỳ</span>
-              <strong class="text-app-text font-bold">{{ fmt(stats()?.predictedTotal ?? 0) }} {{ goal()!.unit }}</strong>
-            </div>
-          </div>
-
-          <!-- Milestones -->
-          <h4 class="text-[0.78rem] font-bold uppercase tracking-wider text-app-muted mb-3 mt-5">Milestones</h4>
-          <div class="flex gap-2 mb-3.5">
-            @for (m of stats()?.milestones; track $index) {
-              <div 
-                class="flex-1 text-center py-2 px-1 rounded-xl border-[1.5px] transition-all duration-200"
-                [ngClass]="{
-                  'bg-[var(--goal-color-soft)] border-[var(--goal-color)]': m.reached,
-                  'bg-app-surface border-app-border': !m.reached
-                }"
-              >
-                <span class="block text-[0.72rem] font-bold" [ngClass]="m.reached ? 'text-[var(--goal-color)]' : 'text-app-muted'">{{ m.percent }}%</span>
-                <span class="block text-base my-0.5">{{ m.reached ? "✅" : "○" }}</span>
-                @if (m.reachedAt) { 
-                  <span class="block text-[0.6rem] text-app-muted font-semibold">{{ formatDate(m.reachedAt) }}</span> 
-                }
-              </div>
-            }
-          </div>
-
-          <!-- Goal info -->
-          <div class="flex items-center justify-between text-[0.75rem] text-app-muted flex-wrap gap-1.5 pt-3 border-t border-app-border mt-4">
-            <span class="font-medium">📅 {{ formatDate(goal()!.startDate) }} → {{ formatDate(goal()!.endDate) }}</span>
-            <span class="bg-app-surface border border-app-border rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold">{{ goal()!.accumulationType === "daily" ? "Hàng ngày" : "Hàng tháng" }}</span>
-          </div>
-        </div>
-      </aside>
-
-      <!-- Right column: logs -->
-      <main class="flex flex-col gap-4">
-        <div class="flex items-center justify-between gap-4 flex-wrap">
-          <h2 class="text-2xl font-extrabold text-app-text tracking-tight m-0">{{ goal()!.name }}</h2>
-          <div class="flex gap-2 items-center">
-            <button class="bg-transparent border-[1.5px] border-app-border rounded-xl px-3.5 py-2 text-[0.85rem] font-bold text-app-muted cursor-pointer hover:border-[var(--goal-color)] hover:text-[var(--goal-color)] transition-all duration-150 active:scale-95" (click)="openEditGoal()">✏️ Sửa mục tiêu</button>
-            <button class="bg-[var(--goal-color)] hover:brightness-110 text-white border-none rounded-xl px-4 py-2.5 text-[0.88rem] font-bold cursor-pointer transition-all duration-150 active:scale-95" (click)="openAddLog()">+ Thêm log</button>
-          </div>
-        </div>
-
-        @if (goal()!.description) {
-          <p class="text-[0.9rem] text-app-muted leading-relaxed m-0 mb-2 font-medium">{{ goal()!.description }}</p>
-        }
-
-        <!-- Log form inline -->
-        @if (showLogForm()) {
-          <div class="block mb-2">
-            <app-log-form
-              [goalId]="goal()!.id"
-              [unit]="goal()!.unit"
-              [valueType]="goal()!.valueType"
-              [editLog]="editingLog() ?? undefined"
-              (saved)="onLogSaved()"
-              (cancelled)="closeLogForm()"
-            />
-          </div>
-        }
-
-        <!-- Log history -->
-        @if (logs().length > 0) {
-          <div class="flex flex-col gap-2">
-            @for (log of logs(); track log.id) {
-              <div class="bg-app-card border-[1.5px] border-app-border rounded-xl p-3 px-4 flex items-center justify-between gap-3 transition-colors duration-150 hover:border-[var(--goal-color)]">
-                <div class="flex flex-col gap-0.5">
-                  <span class="text-[0.85rem] font-bold text-app-text">{{ formatDate(log.date) }}</span>
-                  @if (log.note) { <span class="text-[0.78rem] text-app-muted font-medium">{{ log.note }}</span> }
-                </div>
-                <div class="flex items-center gap-2.5">
-                  @if (log.syncStatus === 'pending') {
-                    <span class="text-xs animate-pulse-sync" title="Chờ đồng bộ">☁️</span>
-                  }
-                  <span class="text-[1.05rem] font-extrabold text-app-green whitespace-nowrap">
-                    +{{ fmt(log.value) }} <span class="text-[0.8rem] font-semibold text-app-muted">{{ goal()!.unit }}</span>
-                  </span>
-                  <div class="flex gap-1 border-l border-app-border pl-2.5 ml-1">
-                    <button class="bg-transparent border-none cursor-pointer p-1.5 px-2 rounded-lg text-sm text-app-muted hover:bg-app-surface transition-colors" (click)="openEditLog(log)" title="Sửa">✏️</button>
-                    <button class="bg-transparent border-none cursor-pointer p-1.5 px-2 rounded-lg text-sm text-app-muted hover:bg-app-surface hover:text-app-red transition-colors" (click)="deleteLog(log)" title="Xóa">🗑️</button>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        }
-
-        @if (logs().length === 0 && !showLogForm()) {
-          <div class="text-center py-12 px-6 bg-app-card border border-app-border rounded-2xl">
-            <p class="text-sm text-app-muted mb-4 font-semibold">Chưa có log nào. Bắt đầu ghi nhận tiến độ!</p>
-            <button class="bg-[var(--goal-color)] hover:brightness-110 text-white border-none rounded-xl px-4 py-2.5 text-[0.88rem] font-bold cursor-pointer transition-all duration-150 active:scale-95" (click)="openAddLog()">+ Thêm log đầu tiên</button>
-          </div>
-        }
-      </main>
-    </div>
-
-    <!-- Edit goal modal -->
-    @if (showEditGoalForm()) {
-      <div class="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-50 p-4 animate-fade-in" (click)="closeEditGoal()" onkeypress="">
-        <div class="bg-app-card border-[1.5px] border-app-border rounded-3xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto animate-slide-up transition-colors duration-250 shadow-2xl" (click)="$event.stopPropagation()" onkeypress="">
-          <div class="flex justify-between items-center p-6 pb-0">
-            <h2 class="text-lg font-bold text-app-text">Chỉnh sửa mục tiêu</h2>
-            <button class="bg-transparent border-none text-lg text-app-muted hover:bg-app-surface hover:text-app-text p-1.5 px-3 rounded-lg cursor-pointer transition-colors" (click)="closeEditGoal()">✕</button>
-          </div>
-          <div class="p-6">
-            <app-goal-form
-              [initialGoal]="goal()!"
-              (saved)="onGoalSaved()"
-              (cancelled)="closeEditGoal()"
-            />
           </div>
         </div>
       </div>
-    }
-  } @else {
-    <div class="text-center py-20 px-6 text-app-muted">
-      <p class="mb-4 text-base font-semibold">Không tìm thấy mục tiêu.</p>
-      <a routerLink="/" class="text-app-accent hover:underline font-bold">← Quay lại</a>
+
+      <!-- Card 2: Required value for next period -->
+      @if (!stats()?.isCompleted && !stats()?.isExpired) {
+      <div class="bg-app-yellow-soft border border-app-yellow/15 rounded-2xl p-4 w-full">
+        <p class="text-app-yellow/60 text-[10px] font-bold uppercase tracking-wider mb-1.5">{{ periodLabel() | titlecase
+          }} tiếp theo cần</p>
+        <p class="text-app-yellow text-2xl font-bold tracking-tight">{{ fmt(stats()?.requiredPerPeriod ?? 0) }} <span
+            class="text-app-yellow/50 text-xs mt-0.5">{{ goal()!.unit }} / {{ periodLabel() }}</span></p>
+      </div>
+      }
+
+      <!-- Card 3: Stats Breakdown & Milestones -->
+      <div class="bg-app-card border border-app-border/80 rounded-2xl p-4 w-full">
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 mb-3">
+          <!-- 1. Đã tích lũy -->
+          <div class="bg-app-surface rounded-xl p-2.5 flex flex-col justify-between"
+            [title]="fmtCompact(stats()?.currentValue ?? 0) + ' ' + goal()!.unit">
+            <p class="text-app-text text-sm font-semibold truncate">{{ fmtCompact(stats()?.currentValue ?? 0) }} {{
+              goal()!.unit }}</p>
+            <p class="text-app-muted text-[10px] mt-0.5 truncate">Đã tích lũy</p>
+          </div>
+
+          <!-- 2. Mục tiêu -->
+          <div class="bg-app-surface rounded-xl p-2.5 flex flex-col justify-between"
+            [title]="fmtCompact(goal()!.targetValue) + ' ' + goal()!.unit">
+            <p class="text-app-text text-sm font-semibold truncate">{{ fmtCompact(goal()!.targetValue) }} {{
+              goal()!.unit }}
+            </p>
+            <p class="text-app-muted text-[10px] mt-0.5 truncate">Mục tiêu</p>
+          </div>
+
+          <!-- 3. Còn lại -->
+          <div class="bg-app-surface rounded-xl p-2.5 flex flex-col justify-between"
+            [title]="fmtCompact(stats()?.remaining ?? 0) + ' ' + goal()!.unit">
+            <p class="text-app-text text-sm font-semibold truncate">{{ fmtCompact(stats()?.remaining ?? 0) }} {{
+              goal()!.unit
+              }}</p>
+            <p class="text-app-muted text-[10px] mt-0.5 truncate">Còn lại</p>
+          </div>
+
+          <!-- 4. Tích lũy TB/Kỳ -->
+          <div class="bg-app-surface rounded-xl p-2.5 flex flex-col justify-between"
+            [title]="fmtCompact(stats()?.avgPerPeriod ?? 0) + ' ' + goal()!.unit">
+            <p class="text-app-text text-sm font-semibold truncate">{{ fmtCompact(stats()?.avgPerPeriod ?? 0) }} {{
+              goal()!.unit }}</p>
+            <p class="text-app-muted text-[10px] mt-0.5 truncate">TB / {{ periodLabel() }}</p>
+          </div>
+
+          <!-- 5. Kỳ còn lại -->
+          <div class="bg-app-surface rounded-xl p-2.5 flex flex-col justify-between">
+            <p class="text-app-text text-sm font-semibold truncate">{{ stats()?.remainingPeriods ?? 0 }}/{{
+              stats()?.totalPeriods ?? 0 }}</p>
+            <p class="text-app-muted text-[10px] mt-0.5 truncate">{{ periodLabel() | titlecase }} còn lại</p>
+          </div>
+
+          <!-- 6. Tiến độ kỳ vọng -->
+          <div class="bg-app-surface rounded-xl p-2.5 flex flex-col justify-between">
+            <p class="text-app-text text-sm font-semibold truncate">{{ stats()?.expectedProgress | number: "1.0-1" }}%
+            </p>
+            <p class="text-app-muted text-[10px] mt-0.5 truncate">Kỳ vọng (%)</p>
+          </div>
+
+          <!-- 7. Giá trị kỳ vọng -->
+          <div class="bg-app-surface rounded-xl p-2.5 flex flex-col justify-between"
+            [title]="fmtCompact(stats()?.expectedValue ?? 0) + ' ' + goal()!.unit">
+            <p class="text-app-text text-sm font-semibold truncate">{{ fmtCompact(stats()?.expectedValue ?? 0) }} {{
+              goal()!.unit }}</p>
+            <p class="text-app-muted text-[10px] mt-0.5 truncate">Giá trị kỳ vọng</p>
+          </div>
+
+          <!-- 8. Dự đoán cuối kỳ -->
+          <div class="bg-app-surface rounded-xl p-2.5 flex flex-col justify-between"
+            [title]="fmtCompact(stats()?.predictedTotal ?? 0) + ' ' + goal()!.unit">
+            <p class="text-app-text text-sm font-semibold truncate">{{ fmtCompact(stats()?.predictedTotal ?? 0) }} {{
+              goal()!.unit }}</p>
+            <p class="text-app-muted text-[10px] mt-0.5 truncate">Dự đoán cuối kỳ</p>
+          </div>
+        </div>
+
+        <!-- Milestones section -->
+        <div class="border-t border-app-border pt-3">
+          <p class="text-app-muted/80 text-[10px] font-semibold uppercase tracking-wider mb-2">Milestones</p>
+          <div class="flex gap-1.5">
+            @for (m of stats()?.milestones; track $index) {
+            <div
+              class="flex-1 h-9 rounded-md flex flex-col items-center justify-center text-[10px] font-bold border transition-all duration-200"
+              [ngClass]="{
+                    'bg-(--goal-color-soft) text-(--goal-color) border-(--goal-color)/20': m.reached,
+                    'bg-app-surface text-app-text/20 border-app-border/40': !m.reached
+                  }" [title]="m.reached ? 'Đạt mốc lúc ' + formatDate(m.reachedAt!) : 'Chưa đạt'">
+              <span>{{ m.percent }}%</span>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Column (Logs History) -->
+    <main class="flex flex-col gap-4 flex-1 min-w-0 w-full">
+      <!-- Prediction Banner -->
+      @if (predictionMsg()) {
+      <div class="border rounded-2xl p-4 flex gap-3 transition-all duration-200" [ngClass]="{
+              'bg-app-green-soft border-app-green/15 text-app-green': stats()?.status === 'completed' || stats()?.status === 'ahead' || stats()?.status === 'on-track',
+              'bg-app-orange/6 border-app-orange/15 text-app-orange': stats()?.status === 'behind',
+              'bg-app-surface border-app-border text-app-muted': stats()?.status === 'expired'
+            }">
+        <i class="text-base mt-0.5 shrink-0" [ngClass]="{
+                 'ti ti-circle-check': stats()?.status === 'completed' || stats()?.status === 'ahead' || stats()?.status === 'on-track',
+                 'ti ti-alert-triangle': stats()?.status === 'behind',
+                 'ti ti-info-circle': stats()?.status === 'expired'
+               }" aria-hidden="true"></i>
+        <p class="text-xs leading-relaxed font-semibold" [innerHTML]="predictionMsg()"></p>
+      </div>
+      }
+
+      <!-- Log form inline -->
+      @if (showLogForm()) {
+      <div class="block mb-1">
+        <app-log-form [goalId]="goal()!.id" [unit]="goal()!.unit" [valueType]="goal()!.valueType"
+          [editLog]="editingLog() ?? undefined" (saved)="onLogSaved()" (cancelled)="closeLogForm()" />
+      </div>
+      }
+
+      <!-- Log history Card -->
+      <div class="bg-app-card border border-app-border/80 rounded-2xl p-4 flex flex-col">
+        <p class="text-app-muted/80 text-[11px] font-semibold uppercase tracking-wider mb-3">Lịch sử ghi nhận</p>
+
+        @if (logs().length > 0) {
+        <div class="flex flex-col gap-2">
+          @for (log of logs(); track log.id) {
+          <div
+            class="flex items-center justify-between bg-app-surface/50 border border-app-border/60 hover:border-(--goal-color) rounded-xl px-3.5 py-3 gap-2 transition-all duration-200">
+            <div class="flex flex-col gap-0.5 min-w-0">
+              <span class="text-app-text/40 text-xs font-semibold">{{ formatDate(log.date) }}</span>
+              @if (log.note) {
+              <span class="text-app-muted text-[11px] font-medium truncate max-w-[150px] sm:max-w-[250px]"
+                [title]="log.note">
+                {{ log.note }}
+              </span>
+              }
+            </div>
+
+            <div class="flex items-center gap-2 flex-1 justify-end">
+              @if (log.syncStatus === 'pending') {
+              <i class="ti ti-cloud-upload text-app-orange animate-pulse-sync text-sm" title="Chờ đồng bộ"
+                aria-hidden="true"></i>
+              } @else if (log.syncStatus === 'error') {
+              <i class="ti ti-cloud-off text-app-red text-sm" title="Lỗi đồng bộ" aria-hidden="true"></i>
+              }
+              <div class="flex items-baseline gap-0.5 justify-end">
+                <span class="text-app-green text-sm font-semibold">+{{ fmt(log.value) }}</span>
+                <span class="text-app-muted/50 text-[10px]">{{ goal()!.unit }}</span>
+              </div>
+            </div>
+
+            <div class="flex gap-1 shrink-0 ml-1">
+              <button (click)="openEditLog(log)"
+                class="w-6 h-6 rounded-md bg-app-surface hover:bg-app-border border-0 flex items-center justify-center cursor-pointer text-app-muted hover:text-app-text transition-colors"
+                title="Sửa log">
+                <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+              </button>
+              <button (click)="deleteLog(log)"
+                class="w-6 h-6 rounded-md bg-app-surface hover:bg-app-red-soft border-0 flex items-center justify-center cursor-pointer text-app-muted hover:text-app-red transition-colors"
+                title="Xóa log">
+                <i class="ti ti-trash text-xs" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+        } @else if (!showLogForm()) {
+        <div class="text-center py-10 px-4">
+          <p class="text-sm text-app-muted mb-4 font-semibold">Chưa có log nào. Bắt đầu ghi nhận tiến độ!</p>
+          <button
+            class="bg-(--goal-color) hover:brightness-110 text-white border-0 rounded-xl px-4 py-2 text-[0.85rem] font-semibold cursor-pointer transition-all duration-150 active:scale-95"
+            (click)="openAddLog()">
+            + Thêm log đầu tiên
+          </button>
+        </div>
+        }
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Edit goal modal -->
+  @if (showEditGoalForm()) {
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-50 p-4 animate-fade-in"
+    (click)="closeEditGoal()" onkeypress="">
+    <div
+      class="bg-app-card border-[1.5px] border-app-border rounded-3xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto animate-slide-up transition-colors duration-250 shadow-2xl"
+      (click)="$event.stopPropagation()" onkeypress="">
+      <div class="flex justify-between items-center p-6 pb-0">
+        <h2 class="text-lg font-bold text-app-text">Chỉnh sửa mục tiêu</h2>
+        <button
+          class="bg-transparent border-none text-lg text-app-muted hover:bg-app-surface hover:text-app-text p-1.5 px-3 rounded-lg cursor-pointer transition-colors"
+          (click)="closeEditGoal()">✕</button>
+      </div>
+      <div class="p-6">
+        <app-goal-form [initialGoal]="goal()!" (saved)="onGoalSaved()" (cancelled)="closeEditGoal()" />
+      </div>
     </div>
+  </div>
+  }
+  } @else {
+  <div class="text-center py-20 px-6 text-app-muted">
+    <p class="mb-4 text-base font-semibold">Không tìm thấy mục tiêu.</p>
+    <a routerLink="/" class="text-app-accent hover:underline font-bold">← Quay lại</a>
+  </div>
   }
 </div>

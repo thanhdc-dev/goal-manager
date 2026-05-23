@@ -68,8 +68,8 @@ export class ProgressChartComponent implements OnChanges, AfterViewInit {
 
   private buildChart(): void {
     const ctx = this.canvasRef.nativeElement.getContext('2d')!;
-    const style = getComputedStyle(document.documentElement);
-    const accent = style.getPropertyValue('--accent').trim() || '#6366f1';
+    const style = getComputedStyle(this.canvasRef.nativeElement);
+    const accent = style.getPropertyValue('--goal-color').trim() || style.getPropertyValue('--accent').trim() || '#6366f1';
     const surface = style.getPropertyValue('--surface').trim() || '#1e1e2e';
 
     this.chart = new Chart(ctx, {
