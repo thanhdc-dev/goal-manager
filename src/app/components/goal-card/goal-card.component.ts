@@ -60,6 +60,26 @@ export class GoalCardComponent {
     this.goal().accumulationType === 'daily' ? 'ngày' : 'tháng'
   );
 
+  readonly insightLabel = computed(() => {
+    if (this.stats().status === 'completed') {
+      return 'Trạng thái';
+    }
+    if (this.stats().status === 'expired') {
+      return 'Trạng thái';
+    }
+    return this.goal().accumulationType === 'daily' ? 'Hôm nay cần' : 'Tháng tới cần';
+  });
+
+  readonly insightValue = computed(() => {
+    if (this.stats().status === 'completed' || this.stats().remaining <= 0) {
+      return 'Hoàn thành 🎉';
+    }
+    if (this.stats().status === 'expired') {
+      return 'Đã hết hạn';
+    }
+    return `${this.fmt(this.stats().requiredPerPeriod)} ${this.goal().unit}`;
+  });
+
   /**
    * Computed: CSS custom properties cho màu riêng của từng goal.
    * Được áp dụng qua [style] binding trên host element.

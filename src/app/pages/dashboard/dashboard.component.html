@@ -1,26 +1,67 @@
 <div class="min-h-screen bg-app-bg transition-colors duration-250">
-  <header class="sticky top-[57px] z-40 bg-app-card/90 backdrop-blur-md border-b border-app-border py-6 px-0 transition-colors duration-250">
-    <div class="max-w-[1100px] mx-auto px-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-extrabold text-app-text tracking-tight mb-0.5">🎯 GoalTracker</h1>
-        <p class="text-xs text-app-muted font-medium">Theo dõi và chinh phục mục tiêu của bạn</p>
+  <main class="max-w-[1100px] mx-auto py-8 px-6 font-sans">
+    
+    <!-- Top Navigation Header -->
+    <nav class="flex items-center justify-between mb-7">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-violet-500 flex items-center justify-center">
+          <i class="ti ti-target text-white text-sm" aria-hidden="true"></i>
+        </div>
+        <span class="text-app-text text-sm font-medium">GoalTracker</span>
       </div>
-      <div class="flex items-center gap-3">
-        <button class="bg-app-surface border-[1.5px] border-app-border text-app-text w-10 h-10 rounded-xl flex items-center justify-center text-lg cursor-pointer hover:border-app-accent hover:bg-app-accent-soft active:scale-95 transition-all duration-150" (click)="themeService.toggle()" [title]="themeService.isDark() ? 'Chuyển sang nền sáng' : 'Chuyển sang nền tối'">
-          {{ themeService.isDark() ? '☀️' : '🌙' }}
+      <div class="flex items-center gap-2">
+        <button 
+          class="w-8 h-8 rounded-lg bg-app-card border border-app-border/80 flex items-center justify-center cursor-pointer hover:border-app-accent hover:bg-app-surface transition-colors" 
+          (click)="themeService.toggle()" 
+          [title]="themeService.isDark() ? 'Chuyển sang nền sáng' : 'Chuyển sang nền tối'">
+          <i class="ti text-app-text/60 text-sm" [ngClass]="themeService.isDark() ? 'ti-sun' : 'ti-moon'" aria-hidden="true"></i>
         </button>
-        <button class="bg-app-accent hover:bg-app-accent-light text-white border-none rounded-xl px-5 py-2.5 text-sm font-bold cursor-pointer transition-all duration-150 active:scale-95" (click)="openForm()">+ Thêm mục tiêu</button>
+        <button
+          class="h-8 px-3 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-medium flex items-center gap-1.5 border-0 cursor-pointer transition-all active:scale-95"
+          (click)="openForm()">
+          <i class="ti ti-plus text-sm" aria-hidden="true"></i>
+          Thêm mục tiêu
+        </button>
       </div>
-    </div>
-  </header>
+    </nav>
+
+    <p class="text-app-muted text-[10px] font-medium tracking-widest uppercase mb-4">Mục tiêu của bạn</p>
+
+    <!-- Empty State -->
+    @if (goals().length === 0) {
+      <div class="text-center py-20 px-6 animate-fade-in bg-app-card border border-app-border rounded-2xl">
+        <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto mb-4">
+          <i class="ti ti-target text-violet-500 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-app-text mb-2">Chưa có mục tiêu nào</h3>
+        <p class="text-app-muted text-sm mb-6">Hãy tạo mục tiêu đầu tiên của bạn để bắt đầu hành trình!</p>
+        <button 
+          class="bg-violet-500 hover:bg-violet-600 text-white border-0 rounded-xl px-5 py-2.5 text-sm font-bold cursor-pointer transition-all duration-150 active:scale-95" 
+          (click)="openForm()">
+          + Tạo mục tiêu
+        </button>
+      </div>
+    }
+
+    <!-- Goals Grid -->
+    @if (goals().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (goal of goals(); track goal.id) {
+          <app-goal-card [goal]="goal" (editGoal)="openForm($event)" (deleteGoal)="deleteGoal($event)" />
+        }
+      </div>
+    }
+  </main>
 
   <!-- Goal form modal -->
   @if (showForm()) {
     <div class="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-50 p-4 animate-fade-in" (click)="closeForm()" onkeypress="">
-      <div class="bg-app-card border-[1.5px] border-app-border rounded-3xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto animate-slide-up transition-colors duration-250 shadow-2xl" (click)="$event.stopPropagation()" onkeypress="">
+      <div class="bg-app-card border border-app-border rounded-3xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto animate-slide-up transition-colors duration-250 shadow-2xl" (click)="$event.stopPropagation()" onkeypress="">
         <div class="flex justify-between items-center p-6 pb-0">
           <h2 class="text-lg font-bold text-app-text">{{ editingGoal() ? "Chỉnh sửa mục tiêu" : "Tạo mục tiêu mới" }}</h2>
-          <button class="bg-transparent border-none text-lg text-app-muted hover:bg-app-surface hover:text-app-text p-1.5 px-3 rounded-lg cursor-pointer transition-colors" (click)="closeForm()">&#x2715;</button>
+          <button class="bg-transparent border-none text-app-muted hover:bg-app-surface hover:text-app-text w-8 h-8 rounded-lg cursor-pointer transition-colors flex items-center justify-center" (click)="closeForm()">
+            <i class="ti ti-x text-base"></i>
+          </button>
         </div>
         <div class="p-6">
           <app-goal-form
@@ -32,25 +73,4 @@
       </div>
     </div>
   }
-
-  <!-- Goals list -->
-  <main class="max-w-[1100px] mx-auto py-8 px-6">
-
-    @if (goals().length === 0) {
-      <div class="text-center py-20 px-6 animate-fade-in">
-        <div class="text-[4rem] mb-4">🎯</div>
-        <h3 class="text-lg font-bold text-app-text mb-2">Chưa có mục tiêu nào</h3>
-        <p class="text-app-muted text-sm mb-6">Hãy tạo mục tiêu đầu tiên của bạn!</p>
-        <button class="bg-app-accent hover:bg-app-accent-light text-white border-none rounded-xl px-5 py-2.5 text-sm font-bold cursor-pointer transition-all duration-150 active:scale-95" (click)="openForm()">+ Tạo mục tiêu</button>
-      </div>
-    }
-
-    @if (goals().length > 0) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[18px]">
-        @for (goal of goals(); track goal.id) {
-          <app-goal-card [goal]="goal" (editGoal)="openForm($event)" (deleteGoal)="deleteGoal($event)" />
-        }
-      </div>
-    }
-  </main>
 </div>

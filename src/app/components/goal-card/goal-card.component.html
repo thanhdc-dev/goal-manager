@@ -1,122 +1,110 @@
-<div 
-  class="relative overflow-hidden p-5 bg-app-card border-[1.5px] border-app-border hover:border-[var(--goal-color)] rounded-2xl cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-950/5 transition-all duration-200 group"
-  [style]="goalStyle()" 
-  [routerLink]="['/goal', goal().id]"
->
-  <!-- Top status indicator line -->
-  <div 
-    class="absolute top-0 left-0 right-0 h-[3px] group-hover:h-1 transition-all duration-200"
+<div
+  class="relative overflow-hidden p-5 bg-app-card border border-app-border/80 hover:border-(--goal-color) rounded-2xl cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-950/5 transition-all duration-200 group font-sans"
+  [style]="goalStyle()" [routerLink]="['/goal', goal().id]">
+  <!-- Top gradient indicator line -->
+  <div class="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-(--goal-color) to-(--goal-color-light)"></div>
+
+  <!-- Card Header: Title & Action Buttons -->
+  <div class="flex items-start justify-between mb-3">
+    <span class="text-app-text text-sm font-semibold leading-snug group-hover:text-(--goal-color) transition-colors">
+      {{ goal().name }}
+    </span>
+    <div class="flex gap-1.5 shrink-0">
+      <button
+        class="w-6 h-6 rounded-md bg-app-surface border-0 flex items-center justify-center cursor-pointer text-app-text/40 hover:text-(--goal-color) hover:bg-(--goal-color-soft) transition-colors"
+        (click)="onEdit($event)" title="Sửa mục tiêu">
+        <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+      </button>
+      <button
+        class="w-6 h-6 rounded-md bg-app-surface border-0 flex items-center justify-center cursor-pointer text-app-text/40 hover:text-app-red hover:bg-app-red-soft transition-colors"
+        (click)="onDelete($event)" title="Xóa mục tiêu">
+        <i class="ti ti-x text-xs" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Badge -->
+  <span
+    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border mb-3 transition-colors"
     [ngClass]="{
-      'bg-app-green': stats().status === 'ahead' || stats().status === 'completed',
-      'bg-app-yellow': stats().status === 'on-track',
-      'bg-app-red': stats().status === 'behind',
-      'bg-app-muted': stats().status === 'expired'
-    }"
-    [style.background-color]="(stats().status === 'ahead' || stats().status === 'on-track' || stats().status === 'behind' || stats().status === 'completed' || stats().status === 'expired') ? null : 'var(--goal-color)'"
-  ></div>
-
-  <div class="mb-3">
-    <div class="flex justify-between items-start gap-2">
-      <h3 class="text-base font-extrabold text-app-text m-0 mb-1 leading-snug transition-colors group-hover:text-[var(--goal-color)]">
-        {{ goal().name }}
-      </h3>
-      <div class="flex items-center gap-0.5 shrink-0">
-        <button 
-          class="bg-transparent border-none text-xs text-app-muted p-1 px-1.5 rounded-md cursor-pointer hover:bg-[var(--goal-color-soft)] hover:text-[var(--goal-color)] transition-all duration-150" 
-          (click)="onEdit($event)" 
-          title="Sửa mục tiêu"
-        >✏️</button>
-        <button 
-          class="bg-transparent border-none text-xs text-app-muted p-1 px-1.5 rounded-md cursor-pointer hover:bg-app-red-soft hover:text-app-red transition-all duration-150" 
-          (click)="onDelete($event)" 
-          title="Xóa mục tiêu"
-        >✕</button>
-      </div>
-    </div>
-    <span class="text-[0.72rem] font-bold uppercase tracking-wider text-app-muted flex items-center gap-1">
-      {{ statusEmoji() }} {{ statusLabel() }}
-      @if (goal().syncStatus === 'pending') {
-        <span class="text-xs animate-pulse-sync" title="Chờ đồng bộ">☁️</span>
-      }
-    </span>
-  </div>
-
-  <!-- Progress bar -->
-  <div class="mb-4 flex items-center gap-2">
-    <div class="flex-1 h-2.5 bg-app-surface rounded-full overflow-hidden">
-      <div 
-        class="h-full bg-gradient-to-r from-[var(--goal-color)] to-[var(--goal-color-light)] rounded-full transition-all duration-600 ease-out flex items-center justify-end min-w-[2px]" 
-        [style.width.%]="stats().progress"
-      >
-        @if (stats().progress > 15) {
-          <span class="text-[0.6rem] font-extrabold text-white pr-1.5">{{ stats().progress | number: "1.0-0" }}%</span>
-        }
-      </div>
-    </div>
-    @if (stats().progress <= 15) {
-      <span class="text-[0.78rem] font-bold text-app-muted whitespace-nowrap">{{ stats().progress | number: "1.0-0" }}%</span>
+      'bg-emerald-400/10 text-emerald-400 border-emerald-400/20': stats().status === 'ahead' || stats().status === 'completed',
+      'bg-amber-400/10 text-amber-400 border-amber-400/20': stats().status === 'on-track',
+      'bg-red-400/10 text-red-400 border-red-400/20': stats().status === 'behind',
+      'bg-app-text/10 text-app-text/50 border-app-border': stats().status === 'expired'
+    }">
+    <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+    {{ statusLabel() }}
+    @if (goal().syncStatus === 'pending') {
+    <i class="ti ti-cloud-upload text-[10px] ml-1 animate-pulse" title="Chờ đồng bộ"></i>
     }
+  </span>
+
+  <!-- Slim Progress Bar -->
+  <div class="h-1 rounded-full bg-app-surface mb-4 overflow-hidden">
+    <div
+      class="h-full rounded-full bg-linear-to-r from-(--goal-color) to-(--goal-color-light) transition-all duration-500 ease-out min-w-[2px]"
+      [style.width.%]="stats().progress"></div>
   </div>
 
-  <!-- Key stats -->
-  <div class="grid grid-cols-2 gap-2.5 mb-3.5">
-    <div 
-      class="text-center py-2.5 px-2 rounded-xl bg-app-surface transition-colors duration-200 hover:bg-app-surface/80 cursor-help"
-      [title]="fmt(stats().currentValue) + ' ' + goal().unit"
-    >
-      <span class="block text-sm font-extrabold text-app-text tabular-nums">{{ fmtCompact(stats().currentValue) }}</span>
-      <span class="block text-[0.63rem] text-app-muted mt-0.5 uppercase tracking-wider">Đã tích lũy</span>
+  <!-- Highlight Insight Block -->
+  <div class="rounded-xl p-3 mb-3 border transition-colors" [ngClass]="{
+      'bg-emerald-400/8 border-emerald-400/15 text-emerald-400': stats().status === 'completed',
+      'bg-app-surface border-app-border text-app-text/50': stats().status === 'expired',
+      'bg-amber-400/8 border-amber-400/15 text-amber-400': stats().status !== 'completed' && stats().status !== 'expired'
+    }">
+    <p class="text-[10px] font-medium uppercase tracking-wider mb-1 opacity-70">
+      {{ insightLabel() }}
+    </p>
+    <p class="text-base font-semibold">
+      {{ insightValue() }}
+    </p>
+  </div>
+
+  <!-- Key Stats Grid -->
+  <div class="grid grid-cols-2 gap-1.5 mb-3">
+    <div class="bg-app-surface rounded-lg p-2.5">
+      <p class="text-app-text text-sm font-semibold tabular-nums">{{ fmtCompact(stats().currentValue) }}</p>
+      <p class="text-app-muted text-[10px] mt-0.5 font-medium">Đã tích lũy</p>
     </div>
-    <div 
-      class="text-center py-2.5 px-2 rounded-xl bg-app-surface transition-colors duration-200 hover:bg-app-surface/80 cursor-help"
-      [title]="fmt(stats().remaining) + ' ' + goal().unit"
-    >
-      <span class="block text-sm font-extrabold text-app-text tabular-nums">{{ fmtCompact(stats().remaining) }}</span>
-      <span class="block text-[0.63rem] text-app-muted mt-0.5 uppercase tracking-wider">Còn lại</span>
+    <div class="bg-app-surface rounded-lg p-2.5">
+      <p class="text-app-text text-sm font-semibold tabular-nums">{{ fmtCompact(stats().remaining) }}</p>
+      <p class="text-app-muted text-[10px] mt-0.5 font-medium">Còn lại</p>
     </div>
-    <div 
-      class="text-center py-2.5 px-2 rounded-xl bg-[var(--goal-color-soft)] transition-colors duration-200 hover:brightness-95 cursor-help"
-      [title]="fmt(stats().requiredPerPeriod) + ' ' + goal().unit + '/' + periodLabel()"
-    >
-      <span class="block text-sm font-extrabold text-[var(--goal-color)] tabular-nums">{{ fmtCompact(stats().requiredPerPeriod) }}</span>
-      <span class="block text-[0.63rem] text-app-muted mt-0.5 uppercase tracking-wider">Cần/{{ periodLabel() }}</span>
+    <div class="bg-app-surface rounded-lg p-2.5">
+      <p class="text-app-text text-sm font-semibold tabular-nums">{{ stats().remainingPeriods }}</p>
+      <p class="text-app-muted text-[10px] mt-0.5 font-medium">{{ periodLabel() | titlecase }} còn lại</p>
     </div>
-    <div 
-      class="text-center py-2.5 px-2 rounded-xl bg-app-surface transition-colors duration-200 hover:bg-app-surface/80"
-    >
-      <span class="block text-sm font-extrabold text-app-text tabular-nums">{{ stats().remainingPeriods }}</span>
-      <span class="block text-[0.63rem] text-app-muted mt-0.5 uppercase tracking-wider">{{ periodLabel() | titlecase }} còn lại</span>
+    <div class="bg-app-surface rounded-lg p-2.5">
+      <p class="text-app-text text-sm font-semibold tabular-nums">{{ stats().progress | number: "1.0-0" }}%</p>
+      <p class="text-app-muted text-[10px] mt-0.5 font-medium">Tiến độ</p>
     </div>
   </div>
 
-  <!-- Unit & target -->
-  <div class="flex items-center gap-2 flex-wrap mb-2.5">
-    <span class="bg-app-surface border border-app-border rounded-full px-2.5 py-0.5 text-[0.72rem] font-semibold text-app-muted">{{ goal().unit }}</span>
-    <span 
-      class="text-[0.75rem] text-app-muted flex-1 font-semibold hover:text-app-text transition-colors cursor-help"
-      [title]="fmt(goal().targetValue) + ' ' + goal().unit"
-    >
-      Mục tiêu: {{ fmtCompact(goal().targetValue) }}
+  <!-- Footer Metadata Row -->
+  <div class="flex items-center justify-between">
+    <span
+      class="text-[11px] text-app-text/40 bg-app-surface/60 border border-app-border/40 rounded-md px-2 py-1 font-medium">
+      {{ goal().unit }} · Mục tiêu: {{ fmtCompact(goal().targetValue) }}
     </span>
-
     @if (stats().streak > 0) {
-      <span class="text-xs font-semibold text-app-orange">🔥 {{ stats().streak }} {{ periodLabel() }}</span>
+    <span
+      class="text-[11px] text-orange-400 bg-orange-400/8 border border-orange-400/15 rounded-full px-2 py-0.5 font-semibold">
+      🔥 {{ stats().streak }} {{ periodLabel() }}
+    </span>
     }
   </div>
 
-  <!-- Milestones -->
-  <div class="flex gap-1.5">
+  <!-- Milestones Row -->
+  <div class="flex gap-1.5 mt-3">
     @for (m of stats().milestones; track m.percent) {
-      <div
-        class="flex-1 text-center py-1 rounded-md text-[0.65rem] font-extrabold transition-all duration-200"
-        [ngClass]="{
-          'bg-[var(--goal-color-soft)] text-[var(--goal-color)] border border-[var(--goal-color)]': m.reached,
-          'bg-app-surface text-app-muted border border-app-border': !m.reached
-        }"
-        [title]="m.reached ? 'Đạt ' + m.percent + '%' : m.percent + '%'"
-      >
-        {{ m.percent }}%
-      </div>
+    <div
+      class="flex-1 h-6 rounded-md flex items-center justify-center text-[10px] font-semibold transition-colors border"
+      [ngClass]="{
+          'bg-(--goal-color-soft) text-(--goal-color) border-(--goal-color)/20': m.reached,
+          'bg-app-surface text-app-text/20 border-app-border/40': !m.reached
+        }" [title]="m.reached ? 'Đạt ' + m.percent + '%' : m.percent + '%'">
+      {{ m.percent }}%
+    </div>
     }
   </div>
 </div>

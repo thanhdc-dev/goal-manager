@@ -1,0 +1,236 @@
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<div class="bg-[#0d0d10] rounded-2xl p-6 border border-white/8 font-sans">
+
+  <nav class="flex items-center justify-between mb-7">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg bg-violet-500 flex items-center justify-center">
+        <i class="ti ti-target text-white text-sm" aria-hidden="true"></i>
+      </div>
+      <span class="text-white text-sm font-medium">GoalTracker</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-white/6 border border-white/10 flex items-center justify-center cursor-pointer">
+        <i class="ti ti-sun text-white/50 text-sm" aria-hidden="true"></i>
+      </div>
+      <button
+        class="h-8 px-3 rounded-lg bg-violet-500 text-white text-xs font-medium flex items-center gap-1.5 border-0 cursor-pointer">
+        <i class="ti ti-plus text-sm" aria-hidden="true"></i>
+        Thêm mục tiêu
+      </button>
+    </div>
+  </nav>
+
+  <p class="text-white/35 text-[10px] font-medium tracking-widest uppercase mb-3">Mục tiêu của bạn</p>
+
+  <div class="grid grid-cols-3 gap-3">
+
+    <div class="relative bg-white/4 border border-white/8 rounded-2xl p-4 overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-emerald-400 to-emerald-300">
+      </div>
+      <div class="flex items-start justify-between mb-3">
+        <span class="text-white text-sm font-medium">Tiết kiệm 100tr</span>
+        <div class="flex gap-1.5">
+          <button
+            class="w-6 h-6 rounded-md bg-white/6 border-0 flex items-center justify-center cursor-pointer text-white/40">
+            <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+          </button>
+          <button
+            class="w-6 h-6 rounded-md bg-white/6 border-0 flex items-center justify-center cursor-pointer text-white/40">
+            <i class="ti ti-x text-xs" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <span
+        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+        Vượt kế hoạch
+      </span>
+      <div class="h-1 rounded-full bg-white/8 mb-4 overflow-hidden">
+        <div class="h-full w-[21%] rounded-full bg-gradient-to-r from-emerald-400 to-emerald-300"></div>
+      </div>
+      <div class="bg-amber-400/8 border border-amber-400/15 rounded-xl p-3 mb-3">
+        <p class="text-amber-400/60 text-[10px] font-medium uppercase tracking-wider mb-1">Tháng tới cần</p>
+        <p class="text-amber-400 text-base font-medium">11,34 tr <span
+            class="text-amber-400/50 text-[11px] font-normal">VNĐ</span></p>
+      </div>
+      <div class="grid grid-cols-2 gap-1.5 mb-3">
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">20,6 tr</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Đã tích lũy</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">79,4 tr</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Còn lại</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">7</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Tháng còn lại</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">21%</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Tiến độ</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] text-white/30 bg-white/5 rounded-md px-2 py-1">VNĐ · 100 tr</span>
+        <span
+          class="text-[11px] text-orange-400/80 bg-orange-400/8 border border-orange-400/15 rounded-full px-2 py-0.5">🔥
+          1 tháng</span>
+      </div>
+      <div class="flex gap-1.5 mt-3">
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          25%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          50%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          75%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          100%</div>
+      </div>
+    </div>
+
+    <div class="relative bg-white/4 border border-white/8 rounded-2xl p-4 overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-violet-400 to-violet-300">
+      </div>
+      <div class="flex items-start justify-between mb-3">
+        <span class="text-white text-sm font-medium">Tiết kiệm vàng cưới</span>
+        <div class="flex gap-1.5">
+          <button
+            class="w-6 h-6 rounded-md bg-white/6 border-0 flex items-center justify-center cursor-pointer text-white/40">
+            <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+          </button>
+          <button
+            class="w-6 h-6 rounded-md bg-white/6 border-0 flex items-center justify-center cursor-pointer text-white/40">
+            <i class="ti ti-x text-xs" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <span
+        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+        Vượt kế hoạch
+      </span>
+      <div class="h-1 rounded-full bg-white/8 mb-4 overflow-hidden">
+        <div class="h-full w-[60%] rounded-full bg-gradient-to-r from-violet-400 to-violet-300"></div>
+      </div>
+      <div class="bg-amber-400/8 border border-amber-400/15 rounded-xl p-3 mb-3">
+        <p class="text-amber-400/60 text-[10px] font-medium uppercase tracking-wider mb-1">Tháng tới cần</p>
+        <p class="text-amber-400 text-base font-medium">0,3 <span
+            class="text-amber-400/50 text-[11px] font-normal">chỉ</span></p>
+      </div>
+      <div class="grid grid-cols-2 gap-1.5 mb-3">
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">3</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Đã tích lũy</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">2</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Còn lại</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">7</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Tháng còn lại</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">60%</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Tiến độ</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] text-white/30 bg-white/5 rounded-md px-2 py-1">chỉ · Mục tiêu: 5</span>
+        <span
+          class="text-[11px] text-orange-400/80 bg-orange-400/8 border border-orange-400/15 rounded-full px-2 py-0.5">🔥
+          1 tháng</span>
+      </div>
+      <div class="flex gap-1.5 mt-3">
+        <div
+          class="flex-1 h-6 rounded-md bg-violet-400/15 flex items-center justify-center text-[10px] font-medium text-violet-400">
+          25%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-violet-400/15 flex items-center justify-center text-[10px] font-medium text-violet-400">
+          50%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          75%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          100%</div>
+      </div>
+    </div>
+
+    <div class="relative bg-white/4 border border-white/8 rounded-2xl p-4 overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-emerald-400 to-emerald-300">
+      </div>
+      <div class="flex items-start justify-between mb-3">
+        <span class="text-white text-sm font-medium">Tiết kiệm 100tr</span>
+        <div class="flex gap-1.5">
+          <button
+            class="w-6 h-6 rounded-md bg-white/6 border-0 flex items-center justify-center cursor-pointer text-white/40">
+            <i class="ti ti-pencil text-xs" aria-hidden="true"></i>
+          </button>
+          <button
+            class="w-6 h-6 rounded-md bg-white/6 border-0 flex items-center justify-center cursor-pointer text-white/40">
+            <i class="ti ti-x text-xs" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <span
+        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+        Vượt kế hoạch
+      </span>
+      <div class="h-1 rounded-full bg-white/8 mb-4 overflow-hidden">
+        <div class="h-full w-[21%] rounded-full bg-gradient-to-r from-emerald-400 to-emerald-300"></div>
+      </div>
+      <div class="bg-amber-400/8 border border-amber-400/15 rounded-xl p-3 mb-3">
+        <p class="text-amber-400/60 text-[10px] font-medium uppercase tracking-wider mb-1">Tháng tới cần</p>
+        <p class="text-amber-400 text-base font-medium">11,34 tr <span
+            class="text-amber-400/50 text-[11px] font-normal">VNĐ</span></p>
+      </div>
+      <div class="grid grid-cols-2 gap-1.5 mb-3">
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">20,6 tr</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Đã tích lũy</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">79,4 tr</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Còn lại</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">7</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Tháng còn lại</p>
+        </div>
+        <div class="bg-white/4 rounded-lg p-2.5">
+          <p class="text-white text-sm font-medium">21%</p>
+          <p class="text-white/30 text-[10px] mt-0.5">Tiến độ</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] text-white/30 bg-white/5 rounded-md px-2 py-1">VNĐ · 100 tr</span>
+        <span
+          class="text-[11px] text-orange-400/80 bg-orange-400/8 border border-orange-400/15 rounded-full px-2 py-0.5">🔥
+          1 tháng</span>
+      </div>
+      <div class="flex gap-1.5 mt-3">
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          25%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          50%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          75%</div>
+        <div
+          class="flex-1 h-6 rounded-md bg-white/4 flex items-center justify-center text-[10px] font-medium text-white/20">
+          100%</div>
+      </div>
+    </div>
+
+  </div>
+</div>
