@@ -25,7 +25,7 @@ export interface Goal {
   color?: string;    // Màu chủ đạo của mục tiêu (hex), VD: '#4ade80'
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
-  userId?: string;   // Supabase User ID
+  userId?: number;   // User ID (api.thanhdc.dev)
   syncStatus?: 'synced' | 'pending' | 'error';
 }
 

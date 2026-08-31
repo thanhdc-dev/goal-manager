@@ -1,6 +1,6 @@
 # 🎯 GoalTracker — Hệ thống quản lý mục tiêu cá nhân hiện đại
 
-**GoalTracker** là một ứng dụng Web App (PWA) hiện đại giúp người dùng thiết lập, theo dõi và đạt được các mục tiêu cá nhân một cách có khoa học. Ứng dụng kết hợp sức mạnh của **Angular 21 (Signals)**, **Tailwind CSS v4** (thiết kế theo lưới 8-Point Grid) và hệ thống đám mây **Supabase (Offline-First Sync & Google OAuth)**, mang đến trải nghiệm mượt mà, bảo mật, riêng tư và vô cùng trực quan.
+**GoalTracker** là một ứng dụng Web App (PWA) hiện đại giúp người dùng thiết lập, theo dõi và đạt được các mục tiêu cá nhân một cách có khoa học. Ứng dụng kết hợp sức mạnh của **Angular 21 (Signals)**, **Tailwind CSS v4** (thiết kế theo lưới 8-Point Grid) và hệ thống đám mây **api.thanhdc.dev (Offline-First Sync & OAuth v2)**, mang đến trải nghiệm mượt mà, bảo mật, riêng tư và vô cùng trực quan.
 
 ---
 
@@ -24,14 +24,13 @@ Hệ thống không chỉ đếm số lượng tích lũy đơn thuần mà còn
 Cơ chế đồng bộ hóa dữ liệu thông minh kết hợp giữa hiệu năng ngoại tuyến và độ tin cậy của đám mây:
 
 - **Mô hình Hybrid Storage:** Dữ liệu luôn được lưu trữ an toàn trong `localStorage` để có thể truy xuất tức thì ngay cả khi hoàn toàn mất mạng.
-- **Hàng đợi đồng bộ (Sync Queue):** Mọi thao tác thêm/sửa/xóa khi offline được ghi lại vào hàng đợi `gm_sync_queue`. Khi thiết bị kết nối mạng trở lại, `SyncService` sẽ tự động xử lý hàng đợi và đẩy dữ liệu lên **Supabase Cloud DB**.
+- **Hàng đợi đồng bộ (Sync Queue):** Mọi thao tác thêm/sửa/xóa khi offline được ghi lại vào hàng đợi `gm_sync_queue`. Khi thiết bị kết nối mạng trở lại, `SyncService` sẽ tự động xử lý hàng đợi và đẩy dữ liệu lên **api.thanhdc.dev**.
 - **Đồng bộ hóa 2 chiều (Bidirectional Sync):** Tự động gộp dữ liệu từ Cloud và Local dựa trên nhãn thời gian cập nhật gần nhất (`updatedAt`) để tránh xung đột dữ liệu.
 - **Chỉ báo trực quan:** Trạng thái đồng bộ của từng mục tiêu và nhật ký tiến độ được thể hiện rõ ràng trên giao diện (nhãn "chờ đồng bộ" hoặc "đã đồng bộ").
 
 ### 🔒 Xác thực bảo mật (Modern Authentication)
 
-- **Magic Link:** Đăng nhập không cần mật khẩu nhanh chóng và an toàn qua Email OTP gửi thẳng vào hộp thư.
-- **Google OAuth:** Đăng nhập một chạm bằng tài khoản Google, tối ưu hóa sự tiện lợi và bảo mật cấp doanh nghiệp.
+- **OAuth v2 (api.thanhdc.dev):** Đăng nhập một chạm qua **Google**, **GitHub** hoặc **Zalo**. BackEnd quản lý toàn bộ OAuth client (clientId/clientSecret/redirectUri); webapp chỉ cần `appKey` + `providerKey` để lấy `authUrl`, rồi đổi `code` lấy token tại route `/auth/callback`.
 
 ### 🎨 Thiết kế Premium & Hệ lưới 8-Point Grid
 
@@ -56,7 +55,7 @@ Giao diện được xây dựng tinh tế với ngôn ngữ thiết kế hiện
 
 - **Angular 21.2.9:** Sử dụng **Signals** cho quản lý trạng thái phản xạ (Reactive State Management) giúp đạt hiệu năng tối đa mà không cần chạy cơ chế phát hiện thay đổi nặng nề của Zone.js.
 - **Tailwind CSS v4.3.0 & PostCSS:** Khung thiết kế tiện ích thế hệ mới nhất cho trải nghiệm phát triển hiện đại và giao diện tinh tế.
-- **Supabase JS SDK v2.105.4:** Quản lý cơ sở dữ liệu thời gian thực và xác thực người dùng.
+- **Angular HttpClient:** Tầng gọi API nội bộ `api.thanhdc.dev` — auth OAuth v2 (login-url → callback → me/refresh/logout) và đồng bộ dữ liệu REST (goals/logs).
 - **Chart.js v4.4.3:** Trực quan hóa tiến độ bằng biểu đồ Doughnut động, mượt mà.
 - **Angular Service Worker:** Tự động hóa bộ nhớ đệm (caching), cung cấp khả năng chạy ngoại tuyến hoàn toàn và thông báo cập nhật ngầm.
 - **TypeScript 5.9.3:** Đảm bảo tính an toàn kiểu dữ liệu và chất lượng mã nguồn ở mức cao nhất.
@@ -69,8 +68,8 @@ Giao diện được xây dựng tinh tế với ngôn ngữ thiết kế hiện
 src/app/
 ├── core/
 │   └── services/               # Logic nghiệp vụ, APIs & Quản lý trạng thái
-│       ├── auth.service.ts      # Xác thực người dùng (Google OAuth / Magic Link)
-│       ├── supabase.service.ts  # Khởi tạo và quản lý kết nối client Supabase
+│       ├── api.service.ts       # Tầng HTTP gọi api.thanhdc.dev (Bearer, refresh, CRUD)
+│       ├── auth.service.ts      # Xác thực OAuth v2 (Google / GitHub / Zalo)
 │       ├── sync.service.ts      # Đồng bộ hóa dữ liệu 2 chiều & Xử lý trạng thái online
 │       ├── sync-queue.service.ts# Hàng đợi hành động offline (CREATE, UPDATE, DELETE)
 │       ├── calculation.service.ts # Thuật toán tính tiến độ, dự báo, chuỗi streak & mốc
@@ -88,7 +87,8 @@ src/app/
 │   ├── log-form/                # Biểu mẫu ghi chép nhật ký tiến độ
 │   └── progress-chart/          # Biểu đồ Doughnut trực quan tiến độ goal
 └── pages/                      # Các trang màn hình chính
-    ├── login/                   # Màn hình đăng nhập (Google OAuth / Magic Link)
+    ├── login/                   # Màn hình đăng nhập (Google / GitHub / Zalo)
+    ├── auth-callback/           # Xử lý callback OAuth (đổi code lấy token)
     ├── dashboard/               # Trang tổng quan danh sách mục tiêu
     └── goal-detail/             # Chi tiết mục tiêu, biểu đồ Chart.js và lịch sử ghi nhận
 ```
@@ -106,7 +106,7 @@ graph TD
     B -->|Kiểm tra kết nối mạng| D{Có Internet?}
     D -->|Không| E[Ghi nhận hành động vào Sync Queue]
     E -->|Lưu offline| F[(LocalStorage: gm_sync_queue)]
-    D -->|Có| G[Gửi trực tiếp lên Supabase DB]
+    D -->|Có| G[Gửi trực tiếp lên api.thanhdc.dev]
 
     H[Mạng kết nối trở lại - Event: online] -->|Kích hoạt| I[SyncService.syncAll]
     I -->|1. Pull| J[Tải dữ liệu mới từ Cloud về và gộp dựa trên updatedAt]
@@ -135,9 +135,9 @@ Cài đặt các thư viện phụ thuộc:
 npm install
 ```
 
-### 3. Cấu hình Supabase
+### 3. Cấu hình API nội bộ (api.thanhdc.dev)
 
-Các tham số cấu hình kết nối đến Supabase được khai báo trong thư mục `src/environments/`:
+Các tham số cấu hình kết nối API nội bộ được khai báo trong thư mục `src/environments/`:
 
 - `src/environments/environment.ts` (môi trường phát triển)
 - `src/environments/environment.production.ts` (môi trường production)
@@ -147,8 +147,9 @@ Cấu trúc file cấu hình:
 ```typescript
 export const environment = {
   production: false,
-  supabaseUrl: "https://<your-project-id>.supabase.co",
-  supabaseKey: "<your-anon-key>",
+  apiBaseUrl: "https://api.thanhdc.dev",
+  appKey: "goal-tracker",
+  providers: ["google", "github", "zalo"],
 };
 ```
 

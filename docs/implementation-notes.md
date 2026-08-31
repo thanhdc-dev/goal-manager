@@ -73,3 +73,35 @@ Tài liệu này ghi lại các quyết định thiết kế, thay đổi kỹ t
 ### 3. Ngăn chặn lỗi tiến độ kỳ vọng của mục tiêu tương lai
 - **Quyết định**: Thêm điều kiện `if (now <= start) return 0;` ở đầu hàm `getExpectedProgress`.
 - **Lợi ích**: Đảm bảo các mục tiêu được lên kế hoạch trong tương lai hiển thị tiến độ dự kiến là `0%` thay vì hiển thị các con số ngẫu nhiên hoặc âm.
+
+---
+
+## 2026-08-31
+
+### Decision
+Chuyển toàn bộ tầng auth + đồng bộ dữ liệu từ **Supabase** sang **API nội bộ `https://api.thanhdc.dev`** theo tài liệu `docs/auth-login-v2-integration.md` (OAuth v2: login-url → callback → me/refresh/logout). Login UI hỗ trợ 3 provider (Google/GitHub/Zalo), bỏ Magic Link email. Token lưu ở `localStorage` (`gm_access_token`, `gm_refresh_token`), tự động refresh khi gặp 401 (refresh token rotate).
+
+### Before
+- `AuthService` dùng `SupabaseService` (Google OAuth + Magic Link email OTP), theo dõi session qua `onAuthStateChange`/`getSession`.
+- `SyncService` ghi/đọc trực tiếp vào Supabase (bảng `goals`/`logs`, snake_case, `user_id` = UUID Supabase).
+- `Goal.userId`/`Log.userId` là `string` (UUID Supabase); `environment` chứa `supabaseUrl`/`supabaseKey`.
+
+### After
+- `ApiService` (mới) — tầng HTTP gọi `api.thanhdc.dev`: gắn `Authorization: Bearer`, gặp 401 → `POST /auth/refresh` 1 lần → retry; refresh fail → clear token + phát `sessionExpired$` (AuthService tự logout).
+- `AuthService` — OAuth v2: `signInWithProvider(provider)` (lấy `authUrl` rồi redirect), `handleCallback(code, state)`, `signOut()` → `DELETE /auth/logout`. Route mới `/auth/callback` xử lý code/state.
+- `SyncService` — dùng `ApiService` với hợp đồng REST giả định (camelCase): `GET/POST/PUT/DELETE /goals`, `/logs`; server suy user từ Bearer token (không gửi `user_id`); giữ nguyên offline queue + merge theo `updatedAt`.
+- `Goal.userId`/`Log.userId` đổi sang `number` (user.id API trả số).
+- `environment`: `apiBaseUrl`, `appKey: 'goal-tracker'`, `providers`.
+
+### Reason
+Thống nhất về API nội bộ do BackEnd quản lý OAuth client tập trung (webapp không tự đăng ký OAuth), loại bỏ phụ thuộc bên thứ ba (Supabase) cho cả auth lẫn data sync.
+
+### Alternatives Considered
+1. Giữ Supabase cho auth + chỉ thay sync — không khả thi do user id (UUID Supabase ↔ số API) không tương thích, phức tạp.
+2. Chỉ thay auth, tắt sync — thu hẹp scope nhưng mất tính năng cloud; user chọn thay cả sync.
+3. Dùng httpOnly cookie cho token — SPA/PWA thuần không có backend để set cookie; chọn `localStorage`.
+
+### Assumption / Rủi ro cần theo dõi
+- **Hợp đồng REST goals/logs là GIẢ ĐỊNH** (chưa có tài liệu API sync thật) — cần đối chiếu khi BackEnd công bố API chính thức.
+- `redirectUri` `/auth/callback` phải trùng cấu hình BackEnd; `appKey` = `goal-tracker` cần được BackEnd đăng ký đủ Google/GitHub/Zalo.
+- CORS: BackEnd phải cho phép origin của webapp.

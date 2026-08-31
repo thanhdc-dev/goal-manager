@@ -1,6 +1,6 @@
-import { Injectable, effect, signal, untracked } from "@angular/core";
-import { SupabaseService } from "./supabase.service";
+import { Injectable, effect, signal, untracked, inject } from "@angular/core";
 import { AuthService } from "./auth.service";
+import { ApiService } from "./api.service";
 import { GoalService } from "./goal.service";
 import { LogService } from "./log.service";
 import { Goal } from "../../shared/models/goal.model";
@@ -9,6 +9,13 @@ import { SyncQueueService, SyncAction } from "./sync-queue.service";
 import { toObservable } from "@angular/core/rxjs-interop";
 import { debounceTime, skip } from "rxjs";
 
+/**
+ * Đồng bộ dữ liệu với api.thanhdc.dev (REST, camelCase).
+ * Server xác định user qua Bearer token — không gửi user_id trong payload.
+ * Offline queue + merge theo updatedAt được giữ nguyên.
+ *
+ * LƯU Ý: Hợp đồng REST goals/logs là GIẢ ĐỊNH — chỉnh lại khi có API thật.
+ */
 @Injectable({
   providedIn: "root",
 })
@@ -18,17 +25,17 @@ export class SyncService {
   private isInitializing = true;
   private isInternalUpdate = false; // Khóa chặn vòng lặp
 
-  constructor(
-    private supabase: SupabaseService,
-    private auth: AuthService,
-    private goalService: GoalService,
-    private logService: LogService,
-    private syncQueue: SyncQueueService,
-  ) {
+  private api = inject(ApiService);
+  private auth = inject(AuthService);
+  private goalService = inject(GoalService);
+  private logService = inject(LogService);
+  private syncQueue = inject(SyncQueueService);
+
+  constructor() {
     // 1. Theo dõi trạng thái mạng
     window.addEventListener('online', () => {
       this.isOnline.set(true);
-      this.syncAll(); 
+      this.syncAll();
     });
     window.addEventListener('offline', () => this.isOnline.set(false));
 
@@ -67,10 +74,10 @@ export class SyncService {
 
   async syncAll() {
     if (this.isSyncing()) return;
-    
+
     this.isSyncing.set(true);
     this.isInternalUpdate = true; // Bắt đầu khóa
-    
+
     const userId = this.auth.user()?.id;
     if (!userId) {
       this.isSyncing.set(false);
@@ -81,9 +88,11 @@ export class SyncService {
     try {
       // 1. Pull changes from Cloud first
       await Promise.all([this.syncGoals(userId), this.syncLogs(userId)]);
-      
+
       // 2. Process pending local actions
-      await this.processQueue(userId);
+      await this.processQueue();
+    } catch (error) {
+      console.error("Sync error:", error);
     } finally {
       this.isSyncing.set(false);
       // Giữ khóa thêm 3 giây để vượt qua debounceTime(2000) của các watcher
@@ -94,24 +103,25 @@ export class SyncService {
   }
 
   private async pushToCloud() {
-    const userId = this.auth.user()?.id;
-    if (!userId || this.isSyncing()) return;
+    if (this.isSyncing()) return;
 
     this.isSyncing.set(true);
     try {
-      await this.processQueue(userId);
+      await this.processQueue();
+    } catch (error) {
+      console.error("Push error:", error);
     } finally {
       this.isSyncing.set(false);
     }
   }
 
-  private async processQueue(userId: string) {
+  private async processQueue() {
     if (this.syncQueue.isEmpty()) return;
 
     const actions = this.syncQueue.getQueue();
     for (const action of actions) {
       try {
-        await this.handleAction(action, userId);
+        await this.handleAction(action);
         this.syncQueue.dequeue(action.id);
       } catch (error) {
         console.error("Error processing sync action:", error);
@@ -121,175 +131,99 @@ export class SyncService {
     }
 
     // Sau khi xử lý xong queue, cập nhật trạng thái các item local thành 'synced'
-    this.updateLocalSyncStatus(userId);
+    this.updateLocalSyncStatus();
   }
 
-  private async handleAction(action: SyncAction, userId: string) {
-    const table = action.entity === 'goal' ? 'goals' : 'logs';
-    const mapper = action.entity === 'goal' ? this.mapLocalGoal : this.mapLocalLog;
-
-    if (action.type === 'DELETE') {
-      const { error } = await this.supabase.client
-        .from(table)
-        .delete()
-        .eq('id', action.entityId)
-        .eq('user_id', userId);
-      if (error) throw error;
+  private async handleAction(action: SyncAction) {
+    if (action.entity === 'goal') {
+      if (action.type === 'DELETE') {
+        await this.api.deleteGoal(action.entityId);
+      } else if (action.type === 'CREATE') {
+        await this.api.createGoal(action.payload as Goal);
+      } else {
+        await this.api.updateGoal(action.entityId, action.payload as Goal);
+      }
     } else {
-      // CREATE or UPDATE
-      const { error } = await this.supabase.client
-        .from(table)
-        .upsert({
-          ...mapper(action.payload),
-          user_id: userId
-        });
-      if (error) throw error;
+      if (action.type === 'DELETE') {
+        await this.api.deleteLog(action.entityId);
+      } else if (action.type === 'CREATE') {
+        await this.api.createLog(action.payload as Log);
+      } else {
+        await this.api.updateLog(action.entityId, action.payload as Log);
+      }
     }
   }
 
-  private updateLocalSyncStatus(userId: string) {
+  private updateLocalSyncStatus() {
     // Chỉ cập nhật những mục đang có status 'pending' thành 'synced'
-    const goals = this.goalService.goals().map(g => 
+    const goals = this.goalService.goals().map(g =>
       g.syncStatus === 'pending' ? { ...g, syncStatus: 'synced' } as Goal : g
     );
-    this.goalService["setAll"](goals);
+    this.goalService.setAll(goals);
 
-    const logs = this.logService.logs().map(l => 
+    const logs = this.logService.logs().map(l =>
       l.syncStatus === 'pending' ? { ...l, syncStatus: 'synced' } as Log : l
     );
-    this.logService["setAll"](logs);
+    this.logService.setAll(logs);
   }
 
-  private async syncGoals(userId: string) {
-    // 1. Fetch remote goals
-    const { data: remoteGoals, error } = await this.supabase.client
-      .from("goals")
-      .select("*")
-      .eq("user_id", userId);
-
-    if (error) {
-      console.error("Error fetching remote goals:", error);
-      return;
-    }
+  private async syncGoals(userId: number) {
+    // 1. Fetch remote goals (server lọc theo user qua Bearer token)
+    const remoteGoals = await this.api.getGoals();
 
     const localGoals = this.goalService.goals();
     const mergedGoals: Goal[] = [...localGoals];
 
-    // 2. Merge logic
-    remoteGoals?.forEach((remote: any) => {
+    // 2. Merge logic (camelCase — đồng nhất với model)
+    remoteGoals?.forEach((remote: Goal) => {
       const localIndex = mergedGoals.findIndex((g) => g.id === remote.id);
-      const remoteMapped: Goal = this.mapRemoteGoal(remote);
+      const remoteMapped: Goal = { ...remote, userId };
 
       if (localIndex === -1) {
         mergedGoals.push(remoteMapped);
       } else {
         const local = mergedGoals[localIndex];
-        if (new Date(remoteMapped.updatedAt) > new Date(local.updatedAt)) {
+        if (new Date(remoteMapped.updatedAt).getTime() > new Date(local.updatedAt).getTime()) {
           mergedGoals[localIndex] = remoteMapped;
         }
       }
     });
 
     // 3. Update local state with merged data and assigned userId
-    const finalGoals = mergedGoals.map((g) => ({ 
-      ...g, 
-      userId, 
-      syncStatus: g.syncStatus || 'synced' 
+    const finalGoals = mergedGoals.map((g) => ({
+      ...g,
+      userId,
+      syncStatus: g.syncStatus || 'synced'
     }));
-    this.goalService["setAll"](finalGoals);
+    this.goalService.setAll(finalGoals);
   }
 
-  private async syncLogs(userId: string) {
-    const { data: remoteLogs, error } = await this.supabase.client
-      .from("logs")
-      .select("*")
-      .eq("user_id", userId);
-
-    if (error) return;
+  private async syncLogs(userId: number) {
+    const remoteLogs = await this.api.getLogs();
 
     const localLogs = this.logService.logs();
     const mergedLogs: Log[] = [...localLogs];
 
-    remoteLogs?.forEach((remote: any) => {
+    remoteLogs?.forEach((remote: Log) => {
       const localIndex = mergedLogs.findIndex((l) => l.id === remote.id);
-      const remoteMapped: Log = this.mapRemoteLog(remote);
+      const remoteMapped: Log = { ...remote, userId };
 
       if (localIndex === -1) {
         mergedLogs.push(remoteMapped);
       } else {
         const local = mergedLogs[localIndex];
-        if (new Date(remoteMapped.updatedAt) > new Date(local.updatedAt)) {
+        if (new Date(remoteMapped.updatedAt).getTime() > new Date(local.updatedAt).getTime()) {
           mergedLogs[localIndex] = remoteMapped;
         }
       }
     });
 
     // 3. Update local state with assigned userId
-    const finalLogs = mergedLogs.map((l) => ({ 
-      ...l, 
+    const finalLogs = mergedLogs.map((l) => ({
+      ...l,
       userId,
       syncStatus: l.syncStatus || 'synced'
     }));
-    this.logService["setAll"](finalLogs);
-  }
-
-
-  // Helpers to map between DB (snake_case) and App (camelCase)
-  private mapRemoteGoal(r: any): Goal {
-    return {
-      id: r.id,
-      name: r.name,
-      targetValue: r.target_value,
-      unit: r.unit,
-      valueType: r.value_type,
-      startDate: r.start_date,
-      endDate: r.end_date,
-      accumulationType: r.accumulation_type,
-      description: r.description,
-      color: r.color,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-      userId: r.user_id,
-    };
-  }
-
-  private mapLocalGoal(l: Goal) {
-    return {
-      id: l.id,
-      name: l.name,
-      target_value: l.targetValue,
-      unit: l.unit,
-      value_type: l.valueType,
-      start_date: l.startDate,
-      end_date: l.endDate,
-      accumulation_type: l.accumulationType,
-      description: l.description,
-      color: l.color,
-      updated_at: l.updatedAt,
-    };
-  }
-
-  private mapRemoteLog(r: any): Log {
-    return {
-      id: r.id,
-      goalId: r.goal_id,
-      value: r.value,
-      date: r.date,
-      note: r.note,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-      userId: r.user_id,
-    };
-  }
-
-  private mapLocalLog(l: Log) {
-    return {
-      id: l.id,
-      goal_id: l.goalId,
-      value: l.value,
-      date: l.date,
-      note: l.note,
-      updated_at: l.updatedAt,
-    };
+    this.logService.setAll(finalLogs);
   }
 }

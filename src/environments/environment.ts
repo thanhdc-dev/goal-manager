@@ -1,5 +1,7 @@
 export const environment = {
   production: false,
-  supabaseUrl: "https://aevihovgkzekawrkpkbr.supabase.co",
-  supabaseKey: "sb_publishable_w8ksv4lY3DDZKufLuHLghA_lwZGm-zc",
+  // API nội bộ (auth OAuth v2 + sync REST) — thay thế Supabase
+  apiBaseUrl: "http://localhost:3000",
+  appKey: "goal-tracker",
+  providers: ["google", "github", "zalo"] as const,
 };

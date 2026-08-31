@@ -1,60 +1,57 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { Router } from '@angular/router';
+import { AuthProvider } from '../../shared/models/auth.model';
+
+interface ProviderOption {
+  key: AuthProvider;
+  label: string;
+}
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
-  email = signal('');
-  loading = signal(false);
-  googleLoading = signal(false);
-  message = signal('');
+  private auth = inject(AuthService);
+  private router = inject(Router);
+
+  loading = signal<AuthProvider | null>(null);
   error = signal('');
 
-  constructor(
-    private auth: AuthService,
-    private router: Router
-  ) {
-    // If already logged in, go to dashboard
+  providers: ProviderOption[] = [
+    { key: 'google', label: 'Tiếp tục với Google' },
+    { key: 'github', label: 'Tiếp tục với GitHub' },
+    { key: 'zalo', label: 'Tiếp tục với Zalo' },
+  ];
+
+  constructor() {
+    // Lỗi do callback trả về (?error=...)
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get('error');
+    if (err) this.error.set(decodeURIComponent(err));
+
+    // Nếu đã đăng nhập, về dashboard
     if (this.auth.isAuthenticated()) {
       this.router.navigate(['/']);
     }
   }
 
-  async onSubmit() {
-    if (!this.email()) return;
-
-    this.loading.set(true);
-    this.message.set('');
+  async loginWith(provider: AuthProvider) {
+    this.loading.set(provider);
     this.error.set('');
 
-    const { error } = await this.auth.signInWithEmail(this.email());
-    
-    this.loading.set(false);
-    if (error) {
-      this.error.set(error.message);
-    } else {
-      this.message.set('Kiểm tra email của bạn để nhận liên kết đăng nhập!');
+    try {
+      await this.auth.signInWithProvider(provider);
+      // Thành công: browser sẽ được redirect tới authUrl của provider
+    } catch (e: any) {
+      this.error.set(
+        e?.error?.message ?? e?.message ?? 'Đăng nhập thất bại, vui lòng thử lại'
+      );
+      this.loading.set(null);
     }
-  }
-
-  async loginWithGoogle() {
-    this.googleLoading.set(true);
-    this.error.set('');
-    this.message.set('');
-
-    const { error } = await this.auth.signInWithGoogle();
-    
-    if (error) {
-      this.error.set(error.message);
-      this.googleLoading.set(false);
-    }
-    // Nếu thành công, trang sẽ tự chuyển hướng sang Google OAuth Consent Screen
   }
 }

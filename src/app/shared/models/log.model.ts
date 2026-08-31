@@ -12,6 +12,6 @@ export interface Log {
   note?: string;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
-  userId?: string;   // Supabase User ID
+  userId?: number;   // User ID (api.thanhdc.dev)
   syncStatus?: 'synced' | 'pending' | 'error';
 }

@@ -34,9 +34,9 @@
   ],
   "dataGroups": [
     {
-      "name": "supabase-api",
+      "name": "api",
       "urls": [
-        "https://aevihovgkzekawrkpkbr.supabase.co/rest/v1/**"
+        "https://api.thanhdc.dev/**"
       ],
       "cacheConfig": {
         "maxSize": 100,

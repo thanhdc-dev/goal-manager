@@ -1,77 +1,82 @@
-import { Injectable, signal, computed } from "@angular/core";
-import { SupabaseService } from "./supabase.service";
-import { Session, User } from "@supabase/supabase-js";
+import { Injectable, signal, computed, inject } from "@angular/core";
 import { Router } from "@angular/router";
+import { ApiService } from "./api.service";
+import { AuthProvider, AuthUser } from "../../shared/models/auth.model";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthService {
-  private _session = signal<Session | null>(null);
+  private api = inject(ApiService);
+  private router = inject(Router);
 
-  readonly session = this._session.asReadonly();
-  readonly user = computed(() => this._session()?.user ?? null);
-  readonly isAuthenticated = computed(() => !!this._session());
+  private _user = signal<AuthUser | null>(null);
+  private _isInitialized = signal(false);
+  private initPromise: Promise<void>;
 
-  constructor(
-    private supabase: SupabaseService,
-    private router: Router,
-  ) {
-    // 1. Khởi tạo session ngay lập tức
-    this.initSession();
+  readonly user = this._user.asReadonly();
+  readonly isAuthenticated = computed(() => !!this._user());
+  readonly isInitialized = this._isInitialized.asReadonly();
 
-    // 2. Lắng nghe thay đổi trạng thái auth
-    this.supabase.auth.onAuthStateChange(
-      (_event: string, session: Session | null) => {
-        this._session.set(session);
+  constructor() {
+    // Token hết hạn hoàn toàn (refresh fail) → đăng xuất tự động
+    this.api.sessionExpired$.subscribe(() => {
+      this._user.set(null);
+      this.router.navigate(["/login"]);
+    });
 
-        if (_event === "SIGNED_IN") {
-          // Tự động chuyển hướng về trang chủ khi đăng nhập thành công
-          this.router.navigate(["/"]);
-        } else if (_event === "SIGNED_OUT") {
-          localStorage.clear(); // Xóa sạch dữ liệu local khi logout để bảo mật
-          this.router.navigate(["/login"]);
-        }
-      },
-    );
+    this.initPromise = this.init();
   }
 
-  private async initSession() {
-    const {
-      data: { session },
-    } = await this.supabase.auth.getSession();
-    this._session.set(session);
+  /** Promise resolve khi quá trình khôi phục session hoàn tất (guard dùng) */
+  whenInitialized(): Promise<void> {
+    return this.initPromise;
+  }
 
-    // Nếu app khởi tạo mà đã có session hợp lệ, chuyển thẳng vào dashboard
-    if (session) {
-      this.router.navigate(["/"]);
+  private async init(): Promise<void> {
+    try {
+      if (this.api.accessToken || this.api.refreshToken) {
+        await this.restoreSession();
+      }
+    } finally {
+      this._isInitialized.set(true);
     }
   }
 
-  async signInWithEmail(email: string) {
-    return await this.supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin + "/login",
-      },
-    });
+  private async restoreSession(): Promise<void> {
+    try {
+      // api.me() tự refresh 1 lần nếu gặp 401; fail nữa thì coi như hết hạn
+      const user = await this.api.me();
+      this._user.set(user);
+    } catch {
+      this.api.clearTokens();
+      this._user.set(null);
+    }
   }
 
-  async signInWithGoogle() {
-    return await this.supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin + "/login",
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
-      },
-    });
+  /** Lấy URL đăng nhập theo provider rồi đưa browser tới đó */
+  async signInWithProvider(provider: AuthProvider): Promise<void> {
+    const { authUrl } = await this.api.getLoginUrl(provider);
+    window.location.href = authUrl;
   }
 
-  async signOut() {
-    const { error } = await this.supabase.auth.signOut();
-    if (error) console.error("Error signing out:", error);
+  /** Đổi code + state lấy token tại route /auth/callback */
+  async handleCallback(code: string, state: string): Promise<void> {
+    const data = await this.api.callback(code, state);
+    this.api.setTokens(data.tokens);
+    this._user.set(data.user);
+  }
+
+  async signOut(): Promise<void> {
+    try {
+      await this.api.logout();
+    } catch (e) {
+      console.error("Error signing out:", e);
+    } finally {
+      this.api.clearTokens();
+      localStorage.clear(); // Xóa sạch dữ liệu local khi logout để bảo mật
+      this._user.set(null);
+      this.router.navigate(["/login"]);
+    }
   }
 }
