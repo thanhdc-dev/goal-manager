@@ -105,3 +105,237 @@ Thống nhất về API nội bộ do BackEnd quản lý OAuth client tập trun
 - **Hợp đồng REST goals/logs là GIẢ ĐỊNH** (chưa có tài liệu API sync thật) — cần đối chiếu khi BackEnd công bố API chính thức.
 - `redirectUri` `/auth/callback` phải trùng cấu hình BackEnd; `appKey` = `goal-tracker` cần được BackEnd đăng ký đủ Google/GitHub/Zalo.
 - CORS: BackEnd phải cho phép origin của webapp.
+
+---
+
+## 2026-09-12
+
+### Decision
+Chốt đặc tả backend cho phần **data sync** (goals/logs) và kế hoạch di chuyển hoàn tất sang API nội bộ `https://api.thanhdc.dev`, dựa trên phân tích code hiện tại. Tạo 2 tài liệu mới:
+
+- `docs/backend-api-spec.md` — đặc tả CSDL (bảng/cột/index) + hợp đồng API (endpoint, input/output, validation) dành cho đội Backend.
+- `docs/implementation-plan-migrate-supabase-to-api.md` — kế hoạch di chuyển phía Frontend (task breakdown, rủi ro, lộ trình).
+
+Các quyết định đã chốt (qua khảo sát người dùng):
+1. **Bỏ qua auth** trong tài liệu mới — OAuth v2 đã migrate xong (commit `9457139`), chỉ tập trung `goals`/`logs`.
+2. **ID: server sinh UUID** khi tạo mới, lưu ở cột `key`, trả về client dưới tên `id`. PK `id` (BIGSERIAL) chỉ giữ nội bộ ở backend.
+3. **Sync theo REST CRUD full-list** (`GET/POST/PUT/DELETE /goals`, `/logs`) — khớp code hiện tại.
+4. **Hard delete** (logs cascade khi xoá goal).
+5. **Không migrate** dữ liệu Supabase cũ — bắt đầu mới.
+6. Tài liệu **Markdown tiếng Việt** trong `docs/`.
+
+### Before
+- Frontend `ApiService`/`SyncService` gọi API nội bộ với **hợp đồng REST giả định** (camelCase, `GET/POST/PUT/DELETE /goals|/logs`), chưa có đặc tả CSDL/API thật cho backend.
+- `Goal.id`/`Log.id` do **client** sinh (`crypto.randomUUID()`); ngày lưu dạng ISO đầy đủ (`toISOString()`).
+
+### After
+- Có đặc tả backend đầy đủ: 2 bảng `goals`/`logs` (`id BIGSERIAL` nội bộ + `key UUID` công khai + `client_ref` chống trùng), 8 endpoint CRUD, quy tắc validation, format lỗi, index, DDL PostgreSQL.
+- Kế hoạch di chuyển xác định: đổi sang **server sinh ID** ⇒ cần cơ chế **reconcile ID** (temp id + `clientRef`) trong `SyncService`; chuẩn hoá ngày về `YYYY-MM-DD`; đảm bảo thứ tự queue goal CREATE trước log CREATE.
+
+### Reason
+Backend cần tài liệu mô tả rõ cần tạo bảng/cột nào và API input/output ra sao để hiện thực khớp với hợp đồng frontend. Việc chốt sớm các quyết định (ID, sync model, xoá, migration) giúp freeze hợp đồng trước khi code, tránh sửa lại nhiều lần.
+
+### Alternatives Considered
+1. **Client sinh UUID làm public key** — giữ nguyên logic offline hiện tại, đơn giản hơn nhiều; nhưng người dùng chọn server sinh ID. Đã ghi vào mục "Điểm còn bỏ ngỏ" của kế hoạch để cân nhắc lại.
+2. **Delta sync (`?since=updatedAt`) + tombstones** — hiệu quả hơn khi dữ liệu lớn nhưng phải sửa `SyncService`; chọn full-list cho giai đoạn này.
+3. **Soft delete (`deleted_at`)** — tránh hồi sinh dữ liệu đã xoá ở đa thiết bị; chọn hard delete cho đơn giản.
+4. **Migrate dữ liệu Supabase cũ** (map `user_id` UUID → number) — phức tạp, không cần thiết; chọn bắt đầu mới.
+5. **OpenAPI YAML** — máy đọc tốt hơn; chọn Markdown tiếng Việt theo yêu cầu.
+
+### Assumption / Rủi ro cần theo dõi
+- **Tên field JSON của UUID** (`id` vs `key`) là **giả định** (tài liệu chọn trả về `id` để khớp model frontend) — cần Backend xác nhận.
+- Cột `key UUID` + PK `id BIGSERIAL` là thiết kế đề xuất; backend có thể điều chỉnh nếu hệ CSDL khác.
+- Bảng `users` được **giả định** có PK `BIGINT` (khớp `AuthUser.id: number`); `user_id` FK cần khớp kiểu thật.
+- Chiến lược server sinh ID làm phát sinh rủi ro cao cho luồng offline (reconcile ID) — đã nêu rõ trong kế hoạch.
+
+---
+
+## 2026-09-12 (cập nhật)
+
+### Decision
+Đổi chiến lược định danh: **bỏ cột `key UUID` công khai**, dùng **`id BIGSERIAL` (số nguyên, tự tăng)** làm **cả khoá chính lẫn định danh công khai** trả về API. Client **không gửi `id`** khi tạo; dùng `clientRef` (UUID do client sinh) làm định danh tạm/offline và chống trùng khi retry. Cập nhật `docs/backend-api-spec.md` và `docs/implementation-plan-migrate-supabase-to-api.md`.
+
+### Before
+- Mỗi bản ghi có 2 định danh: `id BIGSERIAL` (PK nội bộ, không trả API) + `key UUID` (công khai, trả về JSON dưới tên `id`).
+- Frontend `Goal.id` / `Log.id` là `string` (UUID).
+
+### After
+- `id BIGSERIAL` là PK **và** định danh công khai (number). Cột `key` bị loại bỏ; DDL/index/validation/ví dụ JSON cập nhật tương ứng.
+- `clientRef` (UUID) do client sinh, gửi kèm khi create để idempotent; quan hệ log→goal khi chưa sync dùng `goalClientRef`.
+- Frontend `Goal.id` / `Log.id` / `Log.goalId` đổi sang **`number | null`** (`null` khi chưa sync).
+
+### Reason
+Đơn giản hoá mô hình định danh còn một khoá số tự tăng duy nhất — dễ truy vấn, dễ đối chiếu với các hệ thống nội bộ khác và không cần sinh UUID phía server.
+
+### Alternatives Considered
+1. Giữ `key UUID` công khai song song `id` số — che giấu PK/tránh lộ số lượng bản ghi nhưng phức tạp hơn; người dùng chọn bỏ.
+2. Client sinh UUID làm định danh công khai — giữ nguyên logic offline hiện tại, đơn giản nhất; đã cân nhắc nhưng không chọn.
+
+### Assumption / Rủi ro cần theo dõi
+- `clientRef` là **khuyến nghị** (chưa được Backend xác nhận) — cần thống nhất để đảm bảo idempotency.
+- Rủi ro offline tăng do `id` do server cấp: cần reconcile `clientRef → id` và thứ tự queue goal CREATE trước log CREATE.
+
+---
+
+## 2026-09-12 (cập nhật lần 2)
+
+### Decision
+Chốt lại chiến lược định danh: **`key` (UUID) do FRONTEND sinh** là định danh công khai dùng trong mọi API; backend **tự sinh `id` (`BIGSERIAL`, số tự tăng)** làm khoá chính nội bộ và **không trả `id`** ra API. `POST` idempotent theo `key` (key đã tồn tại → trả bản ghi cũ). Cập nhật `docs/backend-api-spec.md` và `docs/implementation-plan-migrate-supabase-to-api.md`.
+
+### Before
+- `id BIGSERIAL` là **cả PK lẫn định danh công khai**; client không gửi `id`, phải dùng cột `client_ref` (UUID) để idempotent và cần cơ chế **reconcile** `clientRef → id` (rủi ro cao cho offline).
+- API trả `id` (number); `Log.goalId` là number.
+
+### After
+- `key UUID` (frontend sinh) là **định danh công khai**; `id BIGSERIAL` chỉ dùng nội bộ (không trả API). Bỏ cột `client_ref` — chính `key` đảm nhiệm idempotency.
+- API dùng `key` cho path param và quan hệ (`goalKey` cho log). Create gửi kèm `key`.
+- ⇒ **Không cần reconcile ID**; client biết `key` ngay khi tạo offline. Frontend chỉ cần đổi tên `id`→`key`, `goalId`→`goalKey`.
+
+### Reason
+Giữ nguyên lợi thế offline-first của kiến trúc hiện tại (client tự sinh định danh), đồng thời đáp ứng yêu cầu backend có PK số tự tăng riêng cho mục đích nội bộ.
+
+### Alternatives Considered
+1. Server sinh `id` số làm định danh công khai (phương án trước) — phải reconcile ID khi offline, phức tạp và rủi ro cao; đã bị thay thế.
+2. Giữ `client_ref` song song `key` — dư thừa vì `key` đã đảm bảo idempotency; loại bỏ.
+
+### Assumption / Rủi ro cần theo dõi
+- Cần Backend xác nhận `POST` idempotent theo `key` (trùng key → trả bản ghi cũ thay vì `409`).
+- `key` nên có ràng buộc `UNIQUE`; cần thống nhất unique toàn cục hay theo user.
+
+---
+
+## 2026-09-12 (cập nhật lần 3)
+
+### Decision
+Đổi kiểu cột `id` của backend từ `BIGSERIAL` sang **`INT` auto-increment** (`SERIAL` trong PostgreSQL). FK `logs.goal_id` cũng đổi sang `INT` cho khớp `goals.id`. Cập nhật `docs/backend-api-spec.md` và `docs/implementation-plan-migrate-supabase-to-api.md`.
+
+### Before
+- `goals.id` / `logs.id`: `BIGSERIAL` (bigint auto-increment); `logs.goal_id`: `BIGINT`.
+
+### After
+- `goals.id` / `logs.id`: **`INT` auto-increment** (`SERIAL`); `logs.goal_id`: `INT`.
+- Bổ sung ghi chú DDL: `SERIAL` = `INT` + auto-increment; MySQL dùng `INT AUTO_INCREMENT`, SQL Server dùng `INT IDENTITY(1,1)`.
+- `user_id` giữ `BIGINT` (tham chiếu bảng `users` của hệ thống auth).
+
+### Reason
+`key` (UUID) đã là định danh công khai nên `id` chỉ phục vụ nội bộ; dùng `INT` là đủ và nhẹ hơn `BIGINT`.
+
+### Alternatives Considered
+1. Giữ `BIGSERIAL` — dư thừa vì `id` không lộ ra API và không cần dải giá trị lớn; không chọn.
+2. Dùng `UUID` làm PK nội bộ — không cần thiết vì `key` đã là UUID; không chọn.
+
+---
+
+## 2026-09-12 (cập nhật lần 4)
+
+### Decision
+Đổi tên bảng backend `logs` → **`goal_logs`** để phân biệt với các loại log khác (system/audit/request log). **API resource vẫn giữ `/logs`** nên không ảnh hưởng frontend. Cập nhật `docs/backend-api-spec.md` và `docs/implementation-plan-migrate-supabase-to-api.md`.
+
+### Before
+- Bảng: `logs` (generic). DDL/index: `CREATE TABLE logs`, `logs_key_uniq`, `idx_logs_*`.
+
+### After
+- Bảng: **`goal_logs`**. DDL/index: `CREATE TABLE goal_logs`, `goal_logs_key_uniq`, `idx_goal_logs_*`.
+- ER diagram, §4.2/§4.3, checklist cập nhật; thêm ghi chú tên bảng ở §4.2 và §6.
+- API endpoints không đổi (`GET/POST/PUT/DELETE /logs`, `GET /goals/:key/logs`).
+
+### Reason
+`logs` là tên quá chung, dễ xung đột/nhầm lẫn với log hệ thống ở backend. `goal_logs` thể hiện rõ miền nghiệp vụ; đổi ở tầng DB nên **không cần sửa frontend**.
+
+### Alternatives Considered
+1. Giữ tên `logs` — đơn giản nhưng mơ hồ khi backend có thêm loại log khác; không chọn.
+2. Đổi cả API path `/logs` → `/goal-logs` — nhất quán hơn nhưng phá vỡ contract hiện tại và phải sửa `ApiService`; đưa vào mục “Điểm còn bỏ ngỏ” để cân nhắc.
+
+### Assumption / Rủi ro cần theo dõi
+- Cần Backend đồng bộ tên bảng `goal_logs` với các bảng log khác trong hệ thống.
+
+---
+
+## 2026-09-12 (cập nhật lần 5)
+
+### Decision
+Đổi API prefix của resource log từ `/logs` → **`/goal-logs`** để đồng bộ với tên bảng `goal_logs`. Cập nhật `docs/backend-api-spec.md` và `docs/implementation-plan-migrate-supabase-to-api.md`.
+
+### Before
+- Endpoints: `GET /logs`, `POST /logs`, `PUT /logs/:key`, `DELETE /logs/:key`, `GET /goals/:key/logs`.
+
+### After
+- Endpoints: `GET /goal-logs`, `POST /goal-logs`, `PUT /goal-logs/:key`, `DELETE /goal-logs/:key`, `GET /goals/:key/goal-logs`.
+- Cập nhật tiêu đề/ghi chú §6, checklist, quyết định #7, sequence diagram và task T4.
+
+### Reason
+Đồng bộ cách đặt tên giữa tầng CSDL (`goal_logs`) và tầng API, tránh nhầm lẫn với các loại log khác và giúp tài liệu nhất quán.
+
+### Alternatives Considered
+1. Giữ path `/logs` trong khi bảng là `goal_logs` — không nhất quán; người dùng chọn đổi để đồng bộ.
+2. Đổi thành `/goal-logs` nhưng bỏ endpoint lồng `GET /goals/:key/goal-logs` — giữ lại dưới dạng tuỳ chọn và ghi vào “Điểm còn bỏ ngỏ”.
+
+### Assumption / Rủi ro cần theo dõi
+- Frontend `ApiService` phải đổi đồng loạt path sang `/goal-logs` (task T4).
+
+---
+
+## 2026-09-15
+
+### Decision
+Triển khai **full migration frontend** sang hợp đồng trong `docs/backend-api-spec.md`: định danh công khai `key` (UUID do client sinh) + `Log.goalKey`, bỏ `userId` ở client; API log dùng prefix `/goal-logs`; DTO gửi đúng field theo spec; chuẩn hoá ngày `YYYY-MM-DD`; sync xử lý goal trước log và bỏ local khi gặp 404.
+
+### Before
+- Model: `Goal.id`, `Log.id`, `Log.goalId`, `userId?`; ngày lưu ISO đầy đủ (form dùng `toISOString()`).
+- `ApiService`: path `/logs`, gửi **nguyên object** (kèm `syncStatus`, `userId`, timestamp).
+- `SyncService`: merge theo `id`, gán `userId`; queue xử lý tuần tự (log có thể chạy trước goal); không xử lý 404.
+- Route `/goal/:id`; service `getById`, `getByGoalId`, `getSignalByGoalId`, `deleteByGoalId`; queue field `entityId`.
+- `GoalService`/`LogService` dùng constructor injection.
+
+### After
+- Model: `Goal.key`, `Log.key`, `Log.goalKey`; bỏ `userId`; ngày `YYYY-MM-DD`.
+- `ApiService`: `GET/POST/PUT/DELETE /goal-logs`, path param `key`; payload chỉ gồm field theo spec (`goalPayload`/`logPayload`).
+- `SyncService`: merge theo `key`; bỏ `userId`; queue chia 2 lượt (goal trước, log sau); 404 → bỏ local + queue; chỉ đặt `syncStatus='synced'` cho item không còn trong queue.
+- Route `/goal/:key`; services `getByKey`, `getByGoalKey`, `getSignalByGoalKey`, `deleteByGoalKey`; thêm `removeLocal`/`removeLocalByGoalKey`; queue field `entityKey`.
+- `GoalService`/`LogService` chuyển sang `inject()` (đúng convention).
+- `load()` của Goal/Log/Queue bỏ dữ liệu format cũ (thiếu `key`/`goalKey`/`entityKey`).
+- Cập nhật `.github/copilot-instructions.md` và `src/app/core/services/.instructions.md`.
+
+### Reason
+Đồng bộ frontend với đặc tả backend; đơn giản hoá offline (key do client sinh → không cần reconcile ID) và tránh gửi field thừa/không hợp lệ.
+
+### Alternatives Considered
+1. Chỉ đổi prefix `/goal-logs`, giữ field `id`/`goalId` — không khớp spec và phải sửa tiếp; người dùng chọn full migration.
+2. Migrate dữ liệu localStorage cũ (`id`→`key`) — phức tạp, kế hoạch đã chốt “bắt đầu mới”; chọn bỏ bản ghi sai format khi load.
+
+### Assumption / Rủi ro cần theo dõi
+- Dữ liệu localStorage cũ (trước migration) sẽ bị bỏ khi load — đúng với quyết định “không migrate”.
+- Cần backend xác nhận `POST` idempotent theo `key` (mục “Điểm còn bỏ ngỏ” §9 của kế hoạch).
+- Chưa kiểm thử E2E với backend thật (T9) vì API sync chưa sẵn sàng.
+
+---
+
+## 2026-09-16
+
+### Decision
+Loại bỏ hoàn toàn API snapshot `LogService.getByGoalKey()`; toàn bộ việc đọc logs theo goal chuyển sang `getSignalByGoalKey(goalKey)` (`Signal<Log[]>`). Chỗ dùng cuối cùng trong `GoalFormComponent.validateEdit()` được đổi sang `getSignalByGoalKey(editing.key)()`.
+
+### Before
+- `LogService.getByGoalKey(goalKey: string): Log[]` — đọc `_logs()` rồi `filter()` một lần, không reactive (`@deprecated`).
+- `goal-form.component.ts`: `const logs = this.logService.getByGoalKey(editing.key);`
+- Tài liệu (`.github/copilot-instructions.md`, `src/app/core/services/.instructions.md`) còn liệt kê `getByGoalKey`.
+
+### After
+- `LogService` chỉ còn `logs`, `logsMap`, `getSignalByGoalKey()` và các hàm mutate (`create`/`update`/`delete`/`setAll`/`removeLocal*`).
+- `goal-form.component.ts`: `const logs = this.logService.getSignalByGoalKey(editing.key)();`
+- Tài liệu chỉ hướng dẫn `getSignalByGoalKey(goalKey)` → `Signal<Log[]>`, ghi rõ cách đọc giá trị bằng `()` và không thêm lại hàm snapshot.
+
+### Reason
+- Trước đây tồn tại 2 API song song cùng chức năng, dễ dùng nhầm bản không reactive (dashboard/goal-detail/goal-card đã dùng signal → không thống nhất).
+- `validateEdit()` là ngữ cảnh imperative (gọi trong `submit()` sau validate form, có `confirm()`), không phải reactive context; đọc ngay giá trị signal `()` là cách đúng để lấy logs mới nhất mà không cần snapshot API riêng.
+- Output của `getSignalByGoalKey()` là computed nên việc gọi trong `submit()` là one-off, chi phí không đáng kể.
+
+### Alternatives Considered
+1. Giữ `getByGoalKey()` với `@deprecated` — người dùng chọn xoá hẳn để tránh code chết và tránh bị dùng lại nhầm.
+2. Khai báo `computed` trong `GoalFormComponent` cho logs của goal đang sửa — phức tạp hơn do goal đang sửa do `@Input() initialGoal` quyết định và chỉ cần đọc 1 lần khi submit.
+3. Đổi `validateEdit()` sang async/effect — không cần thiết, làm phức tạp luồng submit đồng bộ.
+
+### Assumption / Rủi ro cần theo dõi
+- Giả định: không có code nào ngoài repo gọi `getByGoalKey()` (đã kiểm tra toàn workspace: chỉ còn trong tài liệu).
+- `getSignalByGoalKey()` tạo `computed` mới mỗi lần gọi; nếu về sau có nơi gọi trong template/vòng lặp thì nên cache signal theo `goalKey`.
+- `logsMap`/`getSignalByGoalKey()` dùng `.sort()` trên mảng mới (`[...existing, log]`) nên không mutate state gốc — cần giữ nguyên đặc tính này nếu refactor.

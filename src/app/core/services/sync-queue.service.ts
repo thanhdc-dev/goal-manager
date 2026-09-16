@@ -7,7 +7,7 @@ export interface SyncAction {
   id: string;
   type: ActionType;
   entity: EntityType;
-  entityId: string;
+  entityKey: string;
   payload?: any;
   timestamp: string;
 }
@@ -22,7 +22,11 @@ export class SyncQueueService {
 
   private loadQueue(): SyncAction[] {
     const raw = localStorage.getItem(QUEUE_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    // Bỏ action format cũ (trước migration dùng `entityId` thay vì `entityKey`)
+    return Array.isArray(parsed)
+      ? parsed.filter((a) => a && typeof a.entityKey === 'string')
+      : [];
   }
 
   private saveQueue(): void {

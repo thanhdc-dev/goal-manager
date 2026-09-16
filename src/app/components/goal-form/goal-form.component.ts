@@ -60,8 +60,8 @@ export class GoalFormComponent implements OnInit {
         targetValue: g.targetValue,
         unit: g.unit,
         valueType: g.valueType,
-        startDate: g.startDate.split('T')[0],
-        endDate: g.endDate.split('T')[0],
+        startDate: g.startDate,
+        endDate: g.endDate,
         accumulationType: g.accumulationType,
         description: g.description ?? '',
         color: g.color ?? '#7c6ff7',
@@ -90,15 +90,15 @@ export class GoalFormComponent implements OnInit {
       targetValue: this.form.targetValue,
       unit: this.form.unit.trim(),
       valueType: this.form.valueType,
-      startDate: new Date(this.form.startDate + 'T00:00:00').toISOString(),
-      endDate: new Date(this.form.endDate + 'T00:00:00').toISOString(),
+      startDate: this.form.startDate,
+      endDate: this.form.endDate,
       accumulationType: this.form.accumulationType,
       description: this.form.description.trim() || undefined,
       color: this.form.color,
     };
 
     if (this.initialGoal) {
-      this.goalService.update(this.initialGoal.id, data);
+      this.goalService.update(this.initialGoal.key, data);
     } else {
       this.goalService.create(data);
     }
@@ -116,7 +116,8 @@ export class GoalFormComponent implements OnInit {
       this.formError = 'Ngày kết thúc không được đặt trước hôm nay.';
       return false;
     }
-    const logs = this.logService.getByGoalId(editing.id);
+    // Dùng reactive API của LogService (đọc ngay giá trị signal) để không phụ thuộc bản snapshot cũ
+    const logs = this.logService.getSignalByGoalKey(editing.key)();
     const currentValue = logs.reduce((sum, l) => sum + l.value, 0);
     if ((this.form.targetValue ?? 0) <= currentValue) {
       return confirm(

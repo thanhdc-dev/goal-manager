@@ -13,19 +13,18 @@ export type ValueType = 'integer' | 'decimal';
  * Lưu trữ thông tin chi tiết của một mục tiêu
  */
 export interface Goal {
-  id: string;
+  key: string;       // UUID do client sinh (crypto.randomUUID) — định danh công khai
   name: string;
   targetValue: number;
   unit: string;
   valueType: ValueType;
-  startDate: string; // ISO string (YYYY-MM-DD)
-  endDate: string;   // ISO string (YYYY-MM-DD)
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
   accumulationType: AccumulationType;
   description?: string;
   color?: string;    // Màu chủ đạo của mục tiêu (hex), VD: '#4ade80'
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
-  userId?: number;   // User ID (api.thanhdc.dev)
   syncStatus?: 'synced' | 'pending' | 'error';
 }
 

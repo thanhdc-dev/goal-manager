@@ -22,8 +22,8 @@ const REFRESH_TOKEN_KEY = "gm_refresh_token";
  * Quản lý token (localStorage), tự gắn Authorization: Bearer,
  * xử lý 401 → refresh 1 lần → retry; refresh fail → báo sessionExpired.
  *
- * LƯU Ý: Các endpoint sync dữ liệu (goals/logs) là HỢP ĐỒNG GIẢ ĐỊNH (REST, camelCase)
- * — chưa có tài liệu API thật, dễ điều chỉnh khi có API chính thức.
+ * LƯU Ý: Hợp đồng sync dữ liệu (goals/goal-logs) tuân theo `docs/backend-api-spec.md`
+ * — REST, camelCase; định danh công khai là `key` (UUID do client sinh).
  */
 @Injectable({ providedIn: "root" })
 export class ApiService {
@@ -120,36 +120,58 @@ export class ApiService {
     return this.request<void>("DELETE", "/auth/logout");
   }
 
-  // ─── Data sync GIẢ ĐỊNH (camelCase, server suy user từ Bearer token) ────
+  // ─── Data sync (theo docs/backend-api-spec.md) ─────────────────────────
   getGoals(): Promise<Goal[]> {
     return this.request<Goal[]>("GET", "/goals");
   }
 
   getLogs(): Promise<Log[]> {
-    return this.request<Log[]>("GET", "/logs");
+    return this.request<Log[]>("GET", "/goal-logs");
   }
 
   createGoal(goal: Goal): Promise<Goal> {
-    return this.request<Goal>("POST", "/goals", goal);
+    return this.request<Goal>("POST", "/goals", this.goalPayload(goal));
   }
 
-  updateGoal(id: string, goal: Partial<Goal>): Promise<Goal> {
-    return this.request<Goal>("PUT", `/goals/${id}`, goal);
+  updateGoal(key: string, goal: Goal): Promise<Goal> {
+    return this.request<Goal>("PUT", `/goals/${key}`, this.goalPayload(goal));
   }
 
-  deleteGoal(id: string): Promise<void> {
-    return this.request<void>("DELETE", `/goals/${id}`);
+  deleteGoal(key: string): Promise<void> {
+    return this.request<void>("DELETE", `/goals/${key}`);
   }
 
   createLog(log: Log): Promise<Log> {
-    return this.request<Log>("POST", "/logs", log);
+    return this.request<Log>("POST", "/goal-logs", this.logPayload(log, true));
   }
 
-  updateLog(id: string, log: Partial<Log>): Promise<Log> {
-    return this.request<Log>("PUT", `/logs/${id}`, log);
+  updateLog(key: string, log: Log): Promise<Log> {
+    return this.request<Log>("PUT", `/goal-logs/${key}`, this.logPayload(log, false));
   }
 
-  deleteLog(id: string): Promise<void> {
-    return this.request<void>("DELETE", `/logs/${id}`);
+  deleteLog(key: string): Promise<void> {
+    return this.request<void>("DELETE", `/goal-logs/${key}`);
+  }
+
+  /** Chỉ gửi field theo spec §5.2 — bỏ `syncStatus`/`createdAt`/`updatedAt`. */
+  private goalPayload(goal: Goal) {
+    return {
+      key: goal.key,
+      name: goal.name,
+      targetValue: goal.targetValue,
+      unit: goal.unit,
+      valueType: goal.valueType,
+      startDate: goal.startDate,
+      endDate: goal.endDate,
+      accumulationType: goal.accumulationType,
+      description: goal.description,
+      color: goal.color,
+    };
+  }
+
+  /** POST log gửi `key`+`goalKey`; PUT chỉ gửi `value`/`date`/`note` (spec §6.3). */
+  private logPayload(log: Log, includeKeys: boolean) {
+    const base = { value: log.value, date: log.date, note: log.note };
+    return includeKeys ? { key: log.key, goalKey: log.goalKey, ...base } : base;
   }
 }

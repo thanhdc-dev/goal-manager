@@ -12,7 +12,7 @@ import { ValueType } from "../../shared/models/goal.model";
   templateUrl: "./log-form.component.html",
 })
 export class LogFormComponent implements OnInit {
-  @Input() goalId!: string;
+  @Input() goalKey!: string;
   @Input() unit = "";
   @Input() valueType: ValueType = "integer";
   @Input() editLog?: Log;
@@ -65,19 +65,17 @@ export class LogFormComponent implements OnInit {
       return;
     }
 
-    const dateISO = new Date(this.date + "T00:00:00").toISOString();
-
     if (this.editLog) {
-      this.logService.update(this.editLog.id, {
+      this.logService.update(this.editLog.key, {
         value: this.value,
-        date: dateISO,
+        date: this.date,
         note: this.note || undefined,
       });
     } else {
       this.logService.create({
-        goalId: this.goalId,
+        goalKey: this.goalKey,
         value: this.value,
-        date: dateISO,
+        date: this.date,
         note: this.note || undefined,
       });
     }

@@ -12,15 +12,15 @@ export class CalculationService {
   // Cache đơn giản để tránh tính toán lại nếu logs không đổi (tùy chọn, nhưng tốt cho danh sách dài)
   private readonly statsCache = new Map<
     string,
-    { goalId: string; logsHash: string; stats: GoalStats }
+    { goalKey: string; logsHash: string; stats: GoalStats }
   >();
 
   computeStats(goal: Goal, logs: Log[]): GoalStats {
     // Tạo hash đơn giản từ logs để kiểm tra cache (tối ưu cho danh sách logs lớn)
-    const logsHash = logs.map((l) => `${l.id}-${l.value}-${l.date}`).join("|");
+    const logsHash = logs.map((l) => `${l.key}-${l.value}-${l.date}`).join("|");
     // Bao gồm các field goal ảnh hưởng tính toán để invalidate cache khi edit
     const goalSnapshot = `${goal.targetValue}-${goal.endDate}-${goal.startDate}-${goal.valueType}-${goal.accumulationType}`;
-    const cacheKey = `${goal.id}-${goalSnapshot}-${logsHash}`;
+    const cacheKey = `${goal.key}-${goalSnapshot}-${logsHash}`;
 
     if (this.statsCache.has(cacheKey)) {
       return this.statsCache.get(cacheKey)!.stats;
@@ -107,7 +107,7 @@ export class CalculationService {
     };
 
     // Lưu vào cache (giới hạn kích thước cache nếu cần)
-    this.statsCache.set(cacheKey, { goalId: goal.id, logsHash, stats: result });
+    this.statsCache.set(cacheKey, { goalKey: goal.key, logsHash, stats: result });
 
     // Giới hạn cache size (ví dụ: 50 mục tiêu gần nhất)
     if (this.statsCache.size > 50) {

@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from "@angular/core";
+import { Injectable, signal, computed, inject } from "@angular/core";
 import { Goal } from "../../shared/models/goal.model";
 import { SyncQueueService } from "./sync-queue.service";
 
@@ -6,9 +6,8 @@ const STORAGE_KEY = "gm_goals";
 
 @Injectable({ providedIn: "root" })
 export class GoalService {
+  private readonly syncQueue = inject(SyncQueueService);
   private _goals = signal<Goal[]>(this.load());
-
-  constructor(private syncQueue: SyncQueueService) {}
 
   // Signal chỉ đọc
   readonly goals = this._goals.asReadonly();
@@ -27,7 +26,11 @@ export class GoalService {
   private load(): Goal[] {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      const parsed = raw ? JSON.parse(raw) : [];
+      // Bỏ dữ liệu format cũ (trước migration dùng `id` thay vì `key`)
+      return Array.isArray(parsed)
+        ? parsed.filter((g) => g && typeof g.key === "string")
+        : [];
     } catch {
       return [];
     }
@@ -42,17 +45,18 @@ export class GoalService {
     this.save(goals);
   }
 
-  getById(id: string): Goal | undefined {
-    return this._goals().find((g) => g.id === id);
+  getByKey(key: string): Goal | undefined {
+    return this._goals().find((g) => g.key === key);
   }
 
-  create(data: Omit<Goal, "id" | "createdAt" | "updatedAt" | "syncStatus">): Goal {
+  create(data: Omit<Goal, "key" | "createdAt" | "updatedAt" | "syncStatus">): Goal {
+    const now = new Date().toISOString();
     const goal: Goal = {
       ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      syncStatus: 'pending'
+      key: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+      syncStatus: 'pending',
     };
     const updated = [...this._goals(), goal];
     this._goals.set(updated);
@@ -61,17 +65,17 @@ export class GoalService {
     this.syncQueue.enqueue({
       type: 'CREATE',
       entity: 'goal',
-      entityId: goal.id,
+      entityKey: goal.key,
       payload: goal
     });
 
     return goal;
   }
 
-  update(id: string, data: Partial<Omit<Goal, "id" | "createdAt" | "syncStatus">>): void {
+  update(key: string, data: Partial<Omit<Goal, "key" | "createdAt" | "syncStatus">>): void {
     let updatedGoal: Goal | undefined;
     const updated = this._goals().map((g) => {
-      if (g.id === id) {
+      if (g.key === key) {
         updatedGoal = { ...g, ...data, updatedAt: new Date().toISOString(), syncStatus: 'pending' };
         return updatedGoal;
       }
@@ -85,21 +89,28 @@ export class GoalService {
       this.syncQueue.enqueue({
         type: 'UPDATE',
         entity: 'goal',
-        entityId: id,
+        entityKey: key,
         payload: updatedGoal
       });
     }
   }
 
-  delete(id: string): void {
-    const updated = this._goals().filter((g) => g.id !== id);
+  delete(key: string): void {
+    const updated = this._goals().filter((g) => g.key !== key);
     this._goals.set(updated);
     this.save(updated);
 
     this.syncQueue.enqueue({
       type: 'DELETE',
       entity: 'goal',
-      entityId: id
+      entityKey: key
     });
+  }
+
+  /** Xoá local không đẩy vào queue (dùng khi server đã xoá — 404). */
+  removeLocal(key: string): void {
+    const updated = this._goals().filter((g) => g.key !== key);
+    this._goals.set(updated);
+    this.save(updated);
   }
 }

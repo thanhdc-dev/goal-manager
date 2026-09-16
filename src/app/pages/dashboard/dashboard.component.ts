@@ -43,8 +43,8 @@ export class DashboardComponent {
     this.editingGoal.set(null);
   }
 
-  deleteGoal(id: string): void {
-    this.goalService.delete(id);
-    this.logService.deleteByGoalId(id);
+  deleteGoal(key: string): void {
+    this.goalService.delete(key);
+    this.logService.deleteByGoalKey(key);
   }
 }

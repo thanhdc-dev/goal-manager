@@ -29,21 +29,21 @@ export class GoalDetailComponent implements OnInit {
   private readonly logService = inject(LogService);
   private readonly calcService = inject(CalculationService);
 
-  // --- State gốc: chỉ lưu goalId ---
-  private readonly _goalId = signal<string | null>(null);
+  // --- State gốc: chỉ lưu goalKey ---
+  private readonly _goalKey = signal<string | null>(null);
 
   // --- Derived state: tất cả đều là computed ---
 
   /** Goal object — tự cập nhật nếu goalService.goals thay đổi */
   readonly goal = computed(() => {
-    const id = this._goalId();
-    return id ? (this.goalService.getById(id) ?? null) : null;
+    const key = this._goalKey();
+    return key ? (this.goalService.getByKey(key) ?? null) : null;
   });
 
   /** Logs của goal này — tự cập nhật khi logService._logs thay đổi */
   readonly logs = computed(() => {
-    const id = this._goalId();
-    return id ? this.logService.getSignalByGoalId(id)() : [];
+    const key = this._goalKey();
+    return key ? this.logService.getSignalByGoalKey(key)() : [];
   });
 
   /** Stats — tự cập nhật khi goal hoặc logs thay đổi */
@@ -110,8 +110,8 @@ export class GoalDetailComponent implements OnInit {
   readonly showEditGoalForm = signal(false);
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get("id");
-    if (id) this._goalId.set(id);
+    const key = this.route.snapshot.paramMap.get("key");
+    if (key) this._goalKey.set(key);
   }
 
   // --- Log actions ---
@@ -137,7 +137,7 @@ export class GoalDetailComponent implements OnInit {
 
   deleteLog(log: Log): void {
     if (confirm("Xóa log này?")) {
-      this.logService.delete(log.id);
+      this.logService.delete(log.key);
       // stats tự tính lại vì logService._logs đã thay đổi
     }
   }

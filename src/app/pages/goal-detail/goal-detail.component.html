@@ -187,7 +187,7 @@
       <!-- Log form inline -->
       @if (showLogForm()) {
       <div class="block mb-1">
-        <app-log-form [goalId]="goal()!.id" [unit]="goal()!.unit" [valueType]="goal()!.valueType"
+        <app-log-form [goalKey]="goal()!.key" [unit]="goal()!.unit" [valueType]="goal()!.valueType"
           [editLog]="editingLog() ?? undefined" (saved)="onLogSaved()" (cancelled)="closeLogForm()" />
       </div>
       }
@@ -198,7 +198,7 @@
 
         @if (logs().length > 0) {
         <div class="flex flex-col gap-2">
-          @for (log of logs(); track log.id) {
+          @for (log of logs(); track log.key) {
           <div
             class="flex items-center justify-between bg-app-surface/50 border border-app-border/60 hover:border-(--goal-color) rounded-xl px-3.5 py-3 gap-2 transition-all duration-200">
             <div class="flex flex-col gap-0.5 min-w-0">

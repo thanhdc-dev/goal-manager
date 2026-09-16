@@ -5,13 +5,12 @@
  * Lưu trữ các lần ghi nhận tiến độ cho một mục tiêu
  */
 export interface Log {
-  id: string;
-  goalId: string;
+  key: string;       // UUID do client sinh — định danh công khai
+  goalKey: string;   // key của Goal
   value: number;
-  date: string; // ISO string (YYYY-MM-DD)
+  date: string;      // YYYY-MM-DD
   note?: string;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
-  userId?: number;   // User ID (api.thanhdc.dev)
   syncStatus?: 'synced' | 'pending' | 'error';
 }

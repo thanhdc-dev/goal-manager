@@ -4,8 +4,8 @@
 - **Angular 21** — standalone components only, NO NgModules
 - **Signals** — dùng `signal()`, `computed()`, `inject()` từ `@angular/core`
 - **Routing** — lazy loading qua `loadComponent` trong `app.routes.ts`
-- **Storage** — localStorage only, không có backend
-- **CSS** — SCSS
+- **Storage** — localStorage (offline-first) + đồng bộ lên API nội bộ `api.thanhdc.dev`
+- **CSS** — Tailwind CSS
 - **Charts** — chart.js (đã cài sẵn)
 
 ## Cấu trúc thư mục
@@ -23,9 +23,9 @@ src/app/
 ## Domain Models
 
 ```ts
-// Goal — mục tiêu
+// Goal — mục tiêu (định danh công khai là `key`, UUID do client sinh)
 interface Goal {
-  id: string;
+  key: string;
   name: string;
   targetValue: number;
   unit: string;
@@ -34,17 +34,22 @@ interface Goal {
   endDate: string;    // YYYY-MM-DD
   accumulationType: 'daily' | 'monthly';
   description?: string;
+  color?: string;
   createdAt: string;  // ISO string
+  updatedAt: string;  // ISO string
+  syncStatus?: 'synced' | 'pending' | 'error';
 }
 
-// Log — lần ghi nhận tiến độ
+// Log — lần ghi nhận tiến độ (tham chiếu goal qua `goalKey`)
 interface Log {
-  id: string;
-  goalId: string;
+  key: string;
+  goalKey: string;
   value: number;
   date: string;   // YYYY-MM-DD
   note?: string;
   createdAt: string;
+  updatedAt: string;
+  syncStatus?: 'synced' | 'pending' | 'error';
 }
 
 // ProgressStatus
@@ -56,18 +61,18 @@ type ProgressStatus = 'ahead' | 'on-track' | 'behind' | 'completed' | 'expired';
 ### GoalService (`core/services/goal.service.ts`)
 - `goals` — readonly signal chứa toàn bộ danh sách
 - `activeGoals` — computed signal, lọc goal chưa hết hạn
-- `getById(id)` → `Goal | undefined`
+- `getByKey(key)` → `Goal | undefined`
 - `create(data)` → `Goal`
-- `update(id, data)` → `void`
-- `delete(id)` → `void`
+- `update(key, data)` → `void`
+- `delete(key)` → `void`
 - Tự động sync với localStorage key `gm_goals`
 
 ### LogService (`core/services/log.service.ts`)
 - `logs` — readonly signal chứa toàn bộ logs
-- `getByGoalId(goalId)` → `Log[]`
+- `getSignalByGoalKey(goalKey)` → `Signal<Log[]>` — **cách duy nhất để lấy logs theo goal** (reactive); đọc giá trị bằng `getSignalByGoalKey(key)()`
 - `create(data)` → `Log`
-- `update(id, data)` → `void`
-- `delete(id)` → `void`
+- `update(key, data)` → `void`
+- `delete(key)` → `void`
 - Tự động sync với localStorage key `gm_logs`
 
 ### CalculationService (`core/services/calculation.service.ts`)
@@ -102,7 +107,7 @@ interface GoalStats {
 - **Selector**: `app-*` (ví dụ: `app-goal-card`, `app-log-form`)
 - **Date**: mọi date lưu dạng string ISO, KHÔNG dùng `new Date()` trong model
 - **Tính toán**: KHÔNG tính toán trong component, luôn gọi `CalculationService.computeStats()`
-- **ID**: dùng `crypto.randomUUID()` để tạo id mới
+- **ID**: dùng `crypto.randomUUID()` để tạo `key` (UUID do client sinh; backend tự sinh `id` số nội bộ)
 - **Signals**: dùng `signal()` cho state, `computed()` cho derived state
 
 ## Ví dụ component chuẩn
@@ -123,7 +128,8 @@ export class ExampleComponent {
   goals = this.goalService.goals; // signal
 
   getStats(goal: Goal): GoalStats {
-    const logs = this.logService.getByGoalId(goal.id);
+    // getSignalByGoalKey trả về Signal<Log[]> → gọi thêm () để đọc giá trị
+    const logs = this.logService.getSignalByGoalKey(goal.key)();
     return this.calcService.computeStats(goal, logs);
   }
 }
@@ -131,4 +137,4 @@ export class ExampleComponent {
 
 ## Routes hiện tại
 - `/` → `DashboardComponent` — danh sách goals, tạo/sửa/xóa goal
-- `/goal/:id` → `GoalDetailComponent` — chi tiết goal, quản lý logs
+- `/goal/:key` → `GoalDetailComponent` — chi tiết goal, quản lý logs

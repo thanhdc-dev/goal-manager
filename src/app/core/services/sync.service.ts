@@ -1,4 +1,5 @@
 import { Injectable, effect, signal, untracked, inject } from "@angular/core";
+import { HttpErrorResponse } from "@angular/common/http";
 import { AuthService } from "./auth.service";
 import { ApiService } from "./api.service";
 import { GoalService } from "./goal.service";
@@ -10,11 +11,11 @@ import { toObservable } from "@angular/core/rxjs-interop";
 import { debounceTime, skip } from "rxjs";
 
 /**
- * Đồng bộ dữ liệu với api.thanhdc.dev (REST, camelCase).
- * Server xác định user qua Bearer token — không gửi user_id trong payload.
- * Offline queue + merge theo updatedAt được giữ nguyên.
- *
- * LƯU Ý: Hợp đồng REST goals/logs là GIẢ ĐỊNH — chỉnh lại khi có API thật.
+ * Đồng bộ dữ liệu với api.thanhdc.dev (theo docs/backend-api-spec.md).
+ * - Định danh `key` (UUID) do client sinh → không cần reconcile ID.
+ * - Server xác định user qua Bearer token (không gửi userId).
+ * - Goal CREATE luôn được xử lý trước Log CREATE (log tham chiếu `goalKey`).
+ * - PUT/DELETE gặp 404 ⇒ bản ghi đã bị xoá ở nơi khác → bỏ khỏi local.
  */
 @Injectable({
   providedIn: "root",
@@ -78,8 +79,7 @@ export class SyncService {
     this.isSyncing.set(true);
     this.isInternalUpdate = true; // Bắt đầu khóa
 
-    const userId = this.auth.user()?.id;
-    if (!userId) {
+    if (!this.auth.user()?.id) {
       this.isSyncing.set(false);
       this.isInternalUpdate = false;
       return;
@@ -87,7 +87,7 @@ export class SyncService {
 
     try {
       // 1. Pull changes from Cloud first
-      await Promise.all([this.syncGoals(userId), this.syncLogs(userId)]);
+      await Promise.all([this.syncGoals(), this.syncLogs()]);
 
       // 2. Process pending local actions
       await this.processQueue();
@@ -119,111 +119,129 @@ export class SyncService {
     if (this.syncQueue.isEmpty()) return;
 
     const actions = this.syncQueue.getQueue();
+    // Goal trước Log: log chỉ hợp lệ khi goal đã tồn tại trên server.
+    const goalActions = actions.filter((a) => a.entity === 'goal');
+    const logActions = actions.filter((a) => a.entity === 'log');
+
+    const goalsOk = await this.runActions(goalActions);
+    if (goalsOk) {
+      await this.runActions(logActions);
+    }
+
+    this.updateLocalSyncStatus();
+  }
+
+  /** Trả về `false` nếu bị dừng giữa chừng do mất mạng. */
+  private async runActions(actions: SyncAction[]): Promise<boolean> {
     for (const action of actions) {
       try {
         await this.handleAction(action);
         this.syncQueue.dequeue(action.id);
       } catch (error) {
+        if (error instanceof HttpErrorResponse && error.status === 404) {
+          // Bản ghi đã bị xoá ở nơi khác → bỏ khỏi local + queue, không chặn action sau.
+          this.removeLocal(action);
+          this.syncQueue.dequeue(action.id);
+          continue;
+        }
         console.error("Error processing sync action:", error);
-        // Tạm thời dừng nếu có lỗi nghiêm trọng (như mất mạng giữa chừng)
-        if (!this.isOnline()) break;
+        // Dừng nếu mất mạng giữa chừng để thử lại sau
+        if (!this.isOnline()) return false;
       }
     }
-
-    // Sau khi xử lý xong queue, cập nhật trạng thái các item local thành 'synced'
-    this.updateLocalSyncStatus();
+    return true;
   }
 
   private async handleAction(action: SyncAction) {
     if (action.entity === 'goal') {
+      const goal = action.payload as Goal | undefined;
       if (action.type === 'DELETE') {
-        await this.api.deleteGoal(action.entityId);
+        await this.api.deleteGoal(action.entityKey);
       } else if (action.type === 'CREATE') {
-        await this.api.createGoal(action.payload as Goal);
+        await this.api.createGoal(goal!);
       } else {
-        await this.api.updateGoal(action.entityId, action.payload as Goal);
+        await this.api.updateGoal(action.entityKey, goal!);
       }
     } else {
+      const log = action.payload as Log | undefined;
       if (action.type === 'DELETE') {
-        await this.api.deleteLog(action.entityId);
+        await this.api.deleteLog(action.entityKey);
       } else if (action.type === 'CREATE') {
-        await this.api.createLog(action.payload as Log);
+        await this.api.createLog(log!);
       } else {
-        await this.api.updateLog(action.entityId, action.payload as Log);
+        await this.api.updateLog(action.entityKey, log!);
       }
     }
   }
 
+  /** Dùng khi server trả 404: coi như bản ghi đã bị xoá. */
+  private removeLocal(action: SyncAction) {
+    if (action.entity === 'goal') {
+      this.goalService.removeLocal(action.entityKey);
+      this.logService.removeLocalByGoalKey(action.entityKey);
+    } else {
+      this.logService.removeLocal(action.entityKey);
+    }
+  }
+
   private updateLocalSyncStatus() {
-    // Chỉ cập nhật những mục đang có status 'pending' thành 'synced'
-    const goals = this.goalService.goals().map(g =>
-      g.syncStatus === 'pending' ? { ...g, syncStatus: 'synced' } as Goal : g
+    // Chỉ đánh dấu 'synced' cho item không còn trong queue (tránh đánh dấu nhầm khi còn action lỗi)
+    const remaining = new Set(this.syncQueue.getQueue().map((a) => a.entityKey));
+
+    const goals = this.goalService.goals().map((g) =>
+      g.syncStatus === 'pending' && !remaining.has(g.key)
+        ? ({ ...g, syncStatus: 'synced' } as Goal)
+        : g
     );
     this.goalService.setAll(goals);
 
-    const logs = this.logService.logs().map(l =>
-      l.syncStatus === 'pending' ? { ...l, syncStatus: 'synced' } as Log : l
+    const logs = this.logService.logs().map((l) =>
+      l.syncStatus === 'pending' && !remaining.has(l.key)
+        ? ({ ...l, syncStatus: 'synced' } as Log)
+        : l
     );
     this.logService.setAll(logs);
   }
 
-  private async syncGoals(userId: number) {
-    // 1. Fetch remote goals (server lọc theo user qua Bearer token)
+  private async syncGoals() {
+    // Fetch remote goals (server lọc theo user qua Bearer token)
     const remoteGoals = await this.api.getGoals();
 
-    const localGoals = this.goalService.goals();
-    const mergedGoals: Goal[] = [...localGoals];
+    const mergedGoals: Goal[] = [...this.goalService.goals()];
 
-    // 2. Merge logic (camelCase — đồng nhất với model)
+    // Merge theo `key`, giữ bản có `updatedAt` mới hơn
     remoteGoals?.forEach((remote: Goal) => {
-      const localIndex = mergedGoals.findIndex((g) => g.id === remote.id);
-      const remoteMapped: Goal = { ...remote, userId };
-
+      const localIndex = mergedGoals.findIndex((g) => g.key === remote.key);
       if (localIndex === -1) {
-        mergedGoals.push(remoteMapped);
-      } else {
-        const local = mergedGoals[localIndex];
-        if (new Date(remoteMapped.updatedAt).getTime() > new Date(local.updatedAt).getTime()) {
-          mergedGoals[localIndex] = remoteMapped;
-        }
+        mergedGoals.push(remote);
+      } else if (new Date(remote.updatedAt).getTime() > new Date(mergedGoals[localIndex].updatedAt).getTime()) {
+        mergedGoals[localIndex] = remote;
       }
     });
 
-    // 3. Update local state with merged data and assigned userId
-    const finalGoals = mergedGoals.map((g) => ({
+    this.goalService.setAll(mergedGoals.map((g) => ({
       ...g,
-      userId,
-      syncStatus: g.syncStatus || 'synced'
-    }));
-    this.goalService.setAll(finalGoals);
+      syncStatus: g.syncStatus ?? 'synced',
+    })));
   }
 
-  private async syncLogs(userId: number) {
+  private async syncLogs() {
     const remoteLogs = await this.api.getLogs();
 
-    const localLogs = this.logService.logs();
-    const mergedLogs: Log[] = [...localLogs];
+    const mergedLogs: Log[] = [...this.logService.logs()];
 
     remoteLogs?.forEach((remote: Log) => {
-      const localIndex = mergedLogs.findIndex((l) => l.id === remote.id);
-      const remoteMapped: Log = { ...remote, userId };
-
+      const localIndex = mergedLogs.findIndex((l) => l.key === remote.key);
       if (localIndex === -1) {
-        mergedLogs.push(remoteMapped);
-      } else {
-        const local = mergedLogs[localIndex];
-        if (new Date(remoteMapped.updatedAt).getTime() > new Date(local.updatedAt).getTime()) {
-          mergedLogs[localIndex] = remoteMapped;
-        }
+        mergedLogs.push(remote);
+      } else if (new Date(remote.updatedAt).getTime() > new Date(mergedLogs[localIndex].updatedAt).getTime()) {
+        mergedLogs[localIndex] = remote;
       }
     });
 
-    // 3. Update local state with assigned userId
-    const finalLogs = mergedLogs.map((l) => ({
+    this.logService.setAll(mergedLogs.map((l) => ({
       ...l,
-      userId,
-      syncStatus: l.syncStatus || 'synced'
-    }));
-    this.logService.setAll(finalLogs);
+      syncStatus: l.syncStatus ?? 'synced',
+    })));
   }
 }

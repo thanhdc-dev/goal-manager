@@ -1,6 +1,6 @@
 <div
   class="relative overflow-hidden p-5 bg-app-card border border-app-border/80 hover:border-(--goal-color) rounded-2xl cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-950/5 transition-all duration-200 group font-sans"
-  [style]="goalStyle()" [routerLink]="['/goal', goal().id]">
+  [style]="goalStyle()" [routerLink]="['/goal', goal().key]">
   <!-- Top gradient indicator line -->
   <div class="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-(--goal-color) to-(--goal-color-light)"></div>
 

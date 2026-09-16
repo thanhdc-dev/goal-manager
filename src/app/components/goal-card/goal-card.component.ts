@@ -25,7 +25,7 @@ export class GoalCardComponent {
    * Tự động cập nhật khi có log mới được thêm/sửa/xóa ở bất kỳ đâu.
    */
   private readonly logs = computed(() =>
-    this.logService.getSignalByGoalId(this.goal().id)()
+    this.logService.getSignalByGoalKey(this.goal().key)()
   );
 
   /**
@@ -119,7 +119,7 @@ export class GoalCardComponent {
     event.preventDefault();
     event.stopPropagation();
     if (confirm(`Xóa mục tiêu "${this.goal().name}"?`)) {
-      this.deleteGoal.emit(this.goal().id);
+      this.deleteGoal.emit(this.goal().key);
     }
   }
 
